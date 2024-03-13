@@ -1,7 +1,7 @@
 import pickle
 import numpy as np
 import random
-import torch 
+import torch
 import transformers
 
 
@@ -14,7 +14,8 @@ def load_pickle(filename):
     with open(filename, "rb") as f:
         return pickle.load(f)
 
-def set_seed(seed=0)
+
+def set_seed(seed=0):
     # set the random seed
     random.seed(seed)
     transformers.set_seed(seed)

@@ -1,7 +1,9 @@
+import copy
 import torch
 import numpy as np
 from tqdm import tqdm
 from transformers import AutoModelForCausalLM, AutoTokenizer
+from vllm import LLM, SamplingParams
 
 
 def parse_dtype(dtype):
@@ -15,8 +17,7 @@ def parse_dtype(dtype):
         raise ValueError(f"Invalid dtype: {dtype}")
 
 
-def get_model(model_name, cache_dir, dtype):
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+def get_model(model_name, cache_dir, dtype, device, vllm=True):
     device_map = "auto" if device.type == "cpu" else (device.index or 0)
 
     has_flash_attn = False
@@ -28,14 +29,22 @@ def get_model(model_name, cache_dir, dtype):
         print("Flash attention not found.")
         pass
 
-    model = AutoModelForCausalLM.from_pretrained(
-        model_name,
-        torch_dtype=parse_dtype(dtype),
-        low_cpu_mem_usage=True,
-        device_map=device_map,
-        attn_implementation="flash_attention_2" if has_flash_attn else None,
-        cache_dir=cache_dir,
-    )
+    if vllm:
+        model = LLM(
+            model_name,
+            download_dir=cache_dir,
+            dtype=dtype,
+            max_model_len=2048,
+        )
+    else:
+        model = AutoModelForCausalLM.from_pretrained(
+            model_name,
+            torch_dtype=parse_dtype(dtype),
+            low_cpu_mem_usage=True,
+            device_map=device_map,
+            attn_implementation="flash_attention_2" if has_flash_attn else None,
+            cache_dir=cache_dir,
+        )
 
     tokenizer = AutoTokenizer.from_pretrained(model_name)
 
@@ -63,7 +72,7 @@ def get_model_probabilities(
 
 @torch.no_grad()
 def get_answer_probabilities(
-    judge_model, judge_tokenizer, dataset, choices, append_tokens, method="max"
+    judge_model, judge_tokenizer, dataset, choices, append_tokens
 ):
     choices_ids = [
         judge_tokenizer.encode(choices[i], add_special_tokens=False)
@@ -85,3 +94,78 @@ def get_answer_probabilities(
         probabilities.append(probs)
 
     return probabilities
+
+
+@torch.no_grad()
+def get_model_generations(
+    advocate_model,
+    advocate_tokenizer,
+    dataset,
+    max_new_tokens=256,
+    top_k=50,
+    top_p=0.95,
+    do_sample=True,
+    temperature=1.0,
+    desc="Generating",
+):
+    if type(advocate_model) == LLM:
+        prompts = [
+            advocate_tokenizer.apply_chat_template(
+                dataset[i]["conversation_history"], tokenize=False
+            )
+            for i in range(len(dataset))
+        ]
+
+        outputs = advocate_model.generate(
+            prompts,
+            SamplingParams(
+                **{
+                    "top_k": top_k,
+                    "top_p": top_p,
+                    "temperature": temperature,
+                    "max_tokens": max_new_tokens,
+                    "n": 1,
+                }
+            ),
+        )
+
+        generations = []
+        for i in range(len(dataset)):
+            generation = outputs[i].outputs[0].text
+
+            generations.append(
+                copy.deepcopy(dataset[i]) | {"generation": generation.strip()}
+            )
+    else:
+        generations = []
+        for i in tqdm(range(len(dataset)), desc=desc):
+            prompt = advocate_tokenizer.apply_chat_template(
+                dataset[i]["conversation_history"], tokenize=False
+            )
+
+            inputs = advocate_tokenizer(
+                prompt, return_tensors="pt", truncation=False, add_special_tokens=False
+            )["input_ids"]
+
+            outputs = advocate_model.generate(
+                inputs.to(advocate_model.device),
+                do_sample=do_sample,
+                max_new_tokens=max_new_tokens,
+                top_k=top_k,
+                top_p=top_p,
+                temperature=temperature,
+                num_return_sequences=1,
+            )
+
+            generated_tokens = outputs[0][inputs.shape[-1] :]
+            generation = advocate_tokenizer.decode(
+                generated_tokens,
+                skip_special_tokens=True,
+                clean_up_tokenization_spaces=True,
+            )
+
+            generations.append(
+                copy.deepcopy(dataset[i]) | {"generation": generation.strip()}
+            )
+
+    return generations
