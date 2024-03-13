@@ -4,6 +4,7 @@ import numpy as np
 from tqdm import tqdm
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from vllm import LLM, SamplingParams
+from .definitions import HUGGIGNFACE_MODEL_PATHS
 
 
 def parse_dtype(dtype):
@@ -29,24 +30,43 @@ def get_model(model_name, cache_dir, dtype, device, vllm=True):
         print("Flash attention not found.")
         pass
 
+    huggingface_model_name = HUGGIGNFACE_MODEL_PATHS[model_name][dtype]
+
     if vllm:
+        if dtype in ["float32", "float16"]:
+            kwargs = {"dtype": dtype}
+        elif dtype == "int8":
+            kwargs = {"quantization": "GPTQ"}
+        else:
+            raise ValueError(f"Invalid dtype: {dtype}")
+
         model = LLM(
-            model_name,
+            huggingface_model_name,
             download_dir=cache_dir,
-            dtype=dtype,
             max_model_len=2048,
+            max_num_seqs=8,
+            **kwargs,
         )
     else:
+        if dtype in ["float32", "float16"]:
+            kwargs = {
+                "torch_dtype": parse_dtype(dtype),
+            }
+        elif dtype == "int8":
+            kwargs = {"load_in_8bit": True}
+        else:
+            raise ValueError(f"Invalid dtype: {dtype}")
+
         model = AutoModelForCausalLM.from_pretrained(
-            model_name,
-            torch_dtype=parse_dtype(dtype),
+            huggingface_model_name,
             low_cpu_mem_usage=True,
             device_map=device_map,
             attn_implementation="flash_attention_2" if has_flash_attn else None,
             cache_dir=cache_dir,
+            **kwargs,
         )
 
-    tokenizer = AutoTokenizer.from_pretrained(model_name)
+    tokenizer = AutoTokenizer.from_pretrained(huggingface_model_name)
 
     return model, tokenizer
 

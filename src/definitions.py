@@ -1,6 +1,19 @@
-MODELS = ["meta-llama/Llama-2-7b-chat-hf"]
+MODELS = ["Llama-2-7b-chat"]
 
-APPEND_TOKENS = {"meta-llama/Llama-2-7b-chat-hf": [29871]}
+HUGGIGNFACE_MODEL_PATHS = {
+    "Llama-2-7b-chat": {
+        "float32": "meta-llama/Llama-2-7b-chat-hf",
+        "float16": "meta-llama/Llama-2-7b-chat-hf",
+        "int8": "TheBloke/Llama-2-7B-Chat-GPTQ",
+    },
+    "Llama-2-13b-chat": {
+        "float32": "meta-llama/Llama-2-13b-chat-hf",
+        "float16": "meta-llama/Llama-2-13b-chat-hf",
+        "int8": "TheBloke/Llama-2-13B-chat-GPTQ",
+    },
+}
+
+APPEND_TOKENS = {"Llama-2-7b-chat": [29871]}
 
 FIELDS = {
     "gpqa": "a science field",

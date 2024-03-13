@@ -20,10 +20,10 @@ def get_judge_args(notebook=False, notebook_args=[]):
     parser.add_argument(
         "--model_judge",
         type=str,
-        default="meta-llama/Llama-2-7b-chat-hf",
+        default="Llama-2-13b-chat",
         choices=MODELS,
     )
-    parser.add_argument("--dtype", type=str, default="float16")
+    parser.add_argument("--dtype", type=str, default="int8")
     parser.add_argument("--dataset", type=str, default="gpqa")
     parser.add_argument(
         "--few_shot", type=argparse.BooleanOptionalAction, default=False
@@ -32,9 +32,7 @@ def get_judge_args(notebook=False, notebook_args=[]):
     parser.add_argument("--evaluation_method", type=str, default="argmax")
     parser.add_argument("--base_logdir", type=str, default="logs")
     parser.add_argument("--base_data_folder", type=str, default="advocate_data")
-    parser.add_argument(
-        "--model_advocate", type=str, default="meta-llama/Llama-2-7b-chat-hf"
-    )
+    parser.add_argument("--model_advocate", type=str, default="Llama-2-13b-chat")
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--num_samples", type=int, default=None)
 
@@ -77,10 +75,10 @@ def get_advocate_args(notebook=False, notebook_args=[]):
     parser.add_argument(
         "--model_advocate",
         type=str,
-        default="meta-llama/Llama-2-7b-chat-hf",
+        default="Llama-2-13b-chat",
         choices=MODELS,
     )
-    parser.add_argument("--dtype", type=str, default="float16")
+    parser.add_argument("--dtype", type=str, default="int8")
     parser.add_argument("--dataset", type=str, default="gpqa")
     parser.add_argument("--base_data_folder", type=str, default="advocate_data")
     parser.add_argument("--num_samples", type=int, default=None)
