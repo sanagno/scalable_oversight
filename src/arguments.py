@@ -28,10 +28,7 @@ def get_judge_args(notebook=False, notebook_args=[]):
     )
     parser.add_argument("--dtype", type=str, default="int8")
     parser.add_argument("--dataset", type=str, default="gpqa")
-    parser.add_argument(
-        "--few_shot", type=argparse.BooleanOptionalAction, default=False
-    )
-    parser.add_argument("--num_fewshot_samples", type=int, default=10)
+    parser.add_argument("--num_fewshot_samples", type=int, default=None)
     parser.add_argument("--evaluation_method", type=str, default="argmax")
     parser.add_argument("--base_logdir", type=str, default="logs")
     parser.add_argument("--base_data_folder", type=str, default="data")
