@@ -13,7 +13,7 @@ HUGGIGNFACE_MODEL_PATHS = {
     },
 }
 
-APPEND_TOKENS = {"Llama-2-7b-chat": [29871]}
+APPEND_TOKENS = {"Llama-2-7b-chat": [29871], "Llama-2-13b-chat": [29871]}
 
 FIELDS = {
     "gpqa": "a science field",

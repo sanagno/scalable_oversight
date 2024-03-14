@@ -1,9 +1,12 @@
 import copy
-import torch
+import math
+
 import numpy as np
+import torch
 from tqdm import tqdm
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from vllm import LLM, SamplingParams
+
 from .definitions import HUGGIGNFACE_MODEL_PATHS
 
 
@@ -71,23 +74,23 @@ def get_model(model_name, cache_dir, dtype, device, vllm=True):
     return model, tokenizer
 
 
-def get_model_probabilities(
-    judge_model, judge_tokenizer, conversation_history, append_tokens, choices_ids
-):
-    prompt = judge_tokenizer.apply_chat_template(conversation_history, tokenize=False)
-    inputs = judge_tokenizer(
-        prompt, return_tensors="pt", truncation=False, add_special_tokens=False
-    )["input_ids"]
-    if len(append_tokens) > 0:
-        inputs = torch.cat(
-            [inputs, torch.tensor(append_tokens)[None].to(inputs.device)], dim=-1
-        )
+# def get_model_probabilities(
+#     judge_model, judge_tokenizer, conversation_history, append_tokens, choices_ids
+# ):
+#     prompt = judge_tokenizer.apply_chat_template(conversation_history, tokenize=False)
+#     inputs = judge_tokenizer(
+#         prompt, return_tensors="pt", truncation=False, add_special_tokens=False
+#     )["input_ids"]
+#     if len(append_tokens) > 0:
+#         inputs = torch.cat(
+#             [inputs, torch.tensor(append_tokens)[None].to(inputs.device)], dim=-1
+#         )
 
-    outputs = judge_model(inputs.to(judge_model.device))
+#     outputs = judge_model(inputs.to(judge_model.device))
 
-    probs = torch.nn.functional.softmax(outputs.logits[0, -1], dim=-1)
+#     probs = torch.nn.functional.softmax(outputs.logits[0, -1], dim=-1)
 
-    return probs[choices_ids].detach().cpu().numpy()
+#     return probs[choices_ids].detach().cpu().numpy()
 
 
 @torch.no_grad()
@@ -101,19 +104,60 @@ def get_answer_probabilities(
     assert all([len(choices_ids[i]) == 1 for i in range(1, len(choices_ids))])
     choices_ids = [x[0] for x in choices_ids]
 
-    probabilities = []
-    for i in tqdm(range(len(dataset)), desc="Evaluating"):
-        probs = get_model_probabilities(
-            judge_model=judge_model,
-            judge_tokenizer=judge_tokenizer,
-            conversation_history=dataset[i]["conversation_history"],
-            append_tokens=append_tokens,
-            choices_ids=choices_ids,
+    if type(judge_model) == LLM:
+        prompts = [
+            judge_tokenizer.apply_chat_template(
+                dataset[i]["conversation_history"], tokenize=False
+            )
+            for i in range(len(dataset))
+        ]
+        inputs = [
+            judge_tokenizer(prompt, truncation=False, add_special_tokens=False)[
+                "input_ids"
+            ]
+            for prompt in prompts
+        ]
+        if len(append_tokens) > 0:
+            inputs = [x + append_tokens for x in inputs]
+
+        outputs = judge_model.generate(
+            prompt_token_ids=inputs,
+            sampling_params=SamplingParams(
+                **{"max_tokens": 1, "n": 1, "logprobs": len(judge_tokenizer)}
+            ),
         )
 
-        probabilities.append(probs)
+        probabilities = []
+        for out in outputs:
+            try:
+                probs = [math.exp(out.outputs[0].logprobs[0][x]) for x in choices_ids]
+            except:
+                probs = [np.nan for _ in choices_ids]
+            probabilities.append(probs)
+    else:
+        probabilities = []
+        for i in tqdm(range(len(dataset)), desc="Evaluating"):
+            prompt = judge_tokenizer.apply_chat_template(
+                dataset[i]["conversation_history"], tokenize=False
+            )
+            inputs = judge_tokenizer(
+                prompt, return_tensors="pt", truncation=False, add_special_tokens=False
+            )["input_ids"]
+            if len(append_tokens) > 0:
+                inputs = torch.cat(
+                    [inputs, torch.tensor(append_tokens)[None].to(inputs.device)],
+                    dim=-1,
+                )
 
-    return probabilities
+            outputs = judge_model(inputs.to(judge_model.device))
+
+            probs = torch.nn.functional.softmax(outputs.logits[0, -1], dim=-1)
+
+            probs = probs[choices_ids].detach().cpu().numpy()
+
+            probabilities.append(probs)
+
+    return np.array(probabilities)
 
 
 @torch.no_grad()
@@ -135,10 +179,16 @@ def get_model_generations(
             )
             for i in range(len(dataset))
         ]
+        inputs = [
+            advocate_tokenizer(prompt, truncation=False, add_special_tokens=False)[
+                "input_ids"
+            ]
+            for prompt in prompts
+        ]
 
         outputs = advocate_model.generate(
-            prompts,
-            SamplingParams(
+            prompt_token_ids=inputs,
+            sampling_params=SamplingParams(
                 **{
                     "top_k": top_k,
                     "top_p": top_p,

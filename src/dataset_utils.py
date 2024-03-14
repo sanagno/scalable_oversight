@@ -168,6 +168,8 @@ def get_dataset(
                     raise ValueError(f"Unknown explanation_level: {advocate_level}")
 
         choices = [chr(65 + i) for i in range(4)]
+    elif dataset == "quality":
+        pass
 
     else:
         raise ValueError(f"Unknown dataset: {dataset}")

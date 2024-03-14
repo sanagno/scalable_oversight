@@ -14,6 +14,11 @@ def get_metrics(
     }
 
     for i in range(len(dataset)):
+        # check if any probablity is nan
+        if np.isnan(probabiltiies[i]).any():
+            # something went wrong, e.g. too many tokens in input
+            continue
+
         if evaluation_method == "argmax":
             value = np.argmax(probabiltiies[i]) == dataset[i]["correct_answer_idx"]
         else:
