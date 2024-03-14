@@ -3,9 +3,9 @@ from .definitions import LEVELS
 
 
 def get_metrics(
-    dataset_name, advocate_level, probabiltiies, dataset, evaluation_method="argmax"
+    dataset_name, advocate_level, probabilities, dataset, evaluation_method="argmax"
 ):
-    assert len(probabiltiies) == len(dataset)
+    assert len(probabilities) == len(dataset)
     metrics = {
         "no_explanation": [],
         "dataset_explanation": [],
@@ -15,12 +15,12 @@ def get_metrics(
 
     for i in range(len(dataset)):
         # check if any probablity is nan
-        if np.isnan(probabiltiies[i]).any():
+        if np.isnan(probabilities[i]).any():
             # something went wrong, e.g. too many tokens in input
             continue
 
         if evaluation_method == "argmax":
-            value = np.argmax(probabiltiies[i]) == dataset[i]["correct_answer_idx"]
+            value = np.argmax(probabilities[i]) == dataset[i]["correct_answer_idx"]
         else:
             raise ValueError(f"Unknown method: {evaluation_method}")
 

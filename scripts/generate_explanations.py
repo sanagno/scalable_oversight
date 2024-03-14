@@ -27,6 +27,7 @@ if __name__ == "__main__":
         system_prompt = SYSTEM_PROMPTS[level].format(field=FIELDS[args.dataset])
 
         dataset = get_dataset(
+            args,
             args.dataset,
             args.cache_dir,
             system_prompt=system_prompt,

@@ -9,6 +9,7 @@ from .definitions import MODELS, APPEND_TOKENS
 def get_advocate_data_folder(base_data_folder, dataset, model_advocate, num_samples):
     return os.path.join(
         base_data_folder,
+        "advocate_data",
         dataset + (("_" + str(num_samples)) if num_samples is not None else ""),
         model_advocate,
     )
@@ -31,7 +32,7 @@ def get_judge_args(notebook=False, notebook_args=[]):
     parser.add_argument("--num_fewshot_samples", type=int, default=10)
     parser.add_argument("--evaluation_method", type=str, default="argmax")
     parser.add_argument("--base_logdir", type=str, default="logs")
-    parser.add_argument("--base_data_folder", type=str, default="advocate_data")
+    parser.add_argument("--base_data_folder", type=str, default="data")
     parser.add_argument("--model_advocate", type=str, default="Llama-2-13b-chat")
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--num_samples", type=int, default=None)
@@ -80,7 +81,7 @@ def get_advocate_args(notebook=False, notebook_args=[]):
     )
     parser.add_argument("--dtype", type=str, default="int8")
     parser.add_argument("--dataset", type=str, default="gpqa")
-    parser.add_argument("--base_data_folder", type=str, default="advocate_data")
+    parser.add_argument("--base_data_folder", type=str, default="data")
     parser.add_argument("--num_samples", type=int, default=None)
     parser.add_argument("--seed", type=int, default=0)
 

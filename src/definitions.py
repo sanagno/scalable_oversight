@@ -17,6 +17,12 @@ APPEND_TOKENS = {"Llama-2-7b-chat": [29871], "Llama-2-13b-chat": [29871]}
 
 FIELDS = {
     "gpqa": "a science field",
+    "quality": "a science field",
+}
+
+HAS_DATASET_EXPLANATIONS = {
+    "gpqa": True,
+    "quality": False,
 }
 
 LEVELS = {
@@ -30,4 +36,6 @@ LEVELS = {
 
 SYSTEM_PROMPTS = {level: f"You are {LEVELS[level]}." for level in LEVELS}
 
-POSSIBLE_ADVOCATES = ["None", "dataset"] + list(LEVELS.keys())
+POSSIBLE_ADVOCATES = [("None", False), ("dataset", False)] + [
+    y for x in list(LEVELS.keys()) for y in [(x, False), (x, True)]
+]

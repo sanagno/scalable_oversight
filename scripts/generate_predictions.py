@@ -6,25 +6,29 @@ sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
 import logging
 
-import torch
-import numpy as np
-from src.arguments import get_judge_args, get_advocate_data_folder
+from src.arguments import get_judge_args
 from src.dataset_utils import get_dataset
 from src.model_utils import get_model, get_answer_probabilities
 from src.utils import save_pickle, set_seed
 from src.metrics import get_metrics
-from src.definitions import FIELDS, SYSTEM_PROMPTS, POSSIBLE_ADVOCATES, LEVELS
+from src.definitions import (
+    FIELDS,
+    SYSTEM_PROMPTS,
+    POSSIBLE_ADVOCATES,
+    LEVELS,
+    HAS_DATASET_EXPLANATIONS,
+)
 import logging
 from tqdm import tqdm
 
 
 if __name__ == "__main__":
-    args = get_judge_args(notebook=True, notebook_args=["--num_samples", "20"])
+    args = get_judge_args()
     set_seed(args.seed)
 
     logger = logging.getLogger("base")
     judge_model, judge_tokenizer = get_model(
-        args.model_judge, args.cache_dir, args.dtype, args.device, vllm=False
+        args.model_judge, args.cache_dir, args.dtype, args.device
     )
 
     system_prompts = {
@@ -34,12 +38,18 @@ if __name__ == "__main__":
     for system_prompt_name, system_prompt in tqdm(
         system_prompts.items(), desc="System prompts"
     ):
-        for advocate_level in POSSIBLE_ADVOCATES:
+        for advocate_level, include_explanation in POSSIBLE_ADVOCATES:
+            if (
+                advocate_level == "dataset"
+                and not HAS_DATASET_EXPLANATIONS[args.dataset]
+            ):
+                continue
+
             dataset, choices = get_dataset(
+                args,
                 args.dataset,
                 args.cache_dir,
                 system_prompt=system_prompt,
-                few_shot=args.few_shot,
                 is_advocate=False,
                 num_samples=args.num_samples,
                 advocate_level=advocate_level,
@@ -48,6 +58,7 @@ if __name__ == "__main__":
                 else os.path.join(
                     args.advocate_data_folder, f"generations_{advocate_level}.pkl"
                 ),
+                include_explanation=include_explanation,
             )
 
             probabilities = get_answer_probabilities(
@@ -62,7 +73,7 @@ if __name__ == "__main__":
                 probabilities,
                 os.path.join(
                     args.log_folder,
-                    f"probabilities_{system_prompt_name}_{advocate_level}.pkl",
+                    f"probabilities_{system_prompt_name}_{advocate_level}_{include_explanation}.pkl",
                 ),
             )
 
@@ -75,5 +86,5 @@ if __name__ == "__main__":
             )
 
             logger.info(
-                f"System prompt {system_prompt_name} advocate level {advocate_level} metric is: {metrics}"
+                f"System prompt {system_prompt_name} advocate level {advocate_level} include_explanation {include_explanation} metric is: {metrics}"
             )
