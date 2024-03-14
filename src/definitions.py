@@ -1,5 +1,3 @@
-MODELS = ["Llama-2-7b-chat"]
-
 HUGGIGNFACE_MODEL_PATHS = {
     "Llama-2-7b-chat": {
         "float32": "meta-llama/Llama-2-7b-chat-hf",
@@ -11,9 +9,18 @@ HUGGIGNFACE_MODEL_PATHS = {
         "float16": "meta-llama/Llama-2-13b-chat-hf",
         "int8": "TheBloke/Llama-2-13B-chat-GPTQ",
     },
+    "Llama-2-70b-chat": {
+        "float32": "meta-llama/Llama-2-70b-chat-hf",
+        "float16": "meta-llama/Llama-2-70b-chat-hf",
+        "int8": "TheBloke/Llama-2-70B-Chat-GPTQ",
+    },
 }
 
-APPEND_TOKENS = {"Llama-2-7b-chat": [29871], "Llama-2-13b-chat": [29871]}
+MODELS = list(HUGGIGNFACE_MODEL_PATHS.keys())
+
+APPEND_TOKENS = {"Llama-2-7b-chat": [29871], "Llama-2-13b-chat": [29871], "Llama-2-70b-chat": [29871]}
+MAX_MODEL_LEN = {"Llama-2-7b-chat": 4096, "Llama-2-13b-chat": 4096, "Llama-2-70b-chat": 4096}
+TOKENIZER_NAME = {"Llama-2-7b-chat": "meta-llama/Llama-2-7b-chat-hf", "Llama-2-13b-chat": "meta-llama/Llama-2-13b-chat-hf", "Llama-2-70b-chat": "meta-llama/Llama-2-70b-chat-hf"}
 
 FIELDS = {
     "gpqa": "a science field",

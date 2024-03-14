@@ -6,21 +6,15 @@ sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
 import logging
 
-from src.arguments import get_judge_args
-from src.dataset_utils import get_dataset
-from src.model_utils import get_model, get_answer_probabilities
-from src.utils import save_pickle, set_seed
-from src.metrics import get_metrics
-from src.definitions import (
-    FIELDS,
-    SYSTEM_PROMPTS,
-    POSSIBLE_ADVOCATES,
-    LEVELS,
-    HAS_DATASET_EXPLANATIONS,
-)
-import logging
 from tqdm import tqdm
 
+from src.arguments import get_judge_args
+from src.dataset_utils import get_dataset
+from src.definitions import (FIELDS, HAS_DATASET_EXPLANATIONS, LEVELS,
+                             POSSIBLE_ADVOCATES, SYSTEM_PROMPTS)
+from src.metrics import get_metrics
+from src.model_utils import get_answer_probabilities, get_model
+from src.utils import save_pickle, set_seed
 
 if __name__ == "__main__":
     args = get_judge_args()

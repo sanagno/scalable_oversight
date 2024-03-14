@@ -1,9 +1,11 @@
-import os
-import torch
 import argparse
-import time
 import logging
-from .definitions import MODELS, APPEND_TOKENS
+import os
+import time
+
+import torch
+
+from .definitions import APPEND_TOKENS, MODELS
 
 
 def get_advocate_data_folder(base_data_folder, dataset, model_advocate, num_samples):

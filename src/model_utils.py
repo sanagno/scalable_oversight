@@ -7,7 +7,7 @@ from tqdm import tqdm
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from vllm import LLM, SamplingParams
 
-from .definitions import HUGGIGNFACE_MODEL_PATHS
+from .definitions import HUGGIGNFACE_MODEL_PATHS, MAX_MODEL_LEN, TOKENIZER_NAME
 
 
 def parse_dtype(dtype):
@@ -34,6 +34,7 @@ def get_model(model_name, cache_dir, dtype, device, vllm=True):
         pass
 
     huggingface_model_name = HUGGIGNFACE_MODEL_PATHS[model_name][dtype]
+    tokenizer_name = TOKENIZER_NAME[model_name]
 
     if vllm:
         if dtype in ["float32", "float16"]:
@@ -46,7 +47,7 @@ def get_model(model_name, cache_dir, dtype, device, vllm=True):
         model = LLM(
             huggingface_model_name,
             download_dir=cache_dir,
-            max_model_len=2048,
+            max_model_len=MAX_MODEL_LEN[model_name],
             max_num_seqs=8,
             **kwargs,
         )
@@ -69,7 +70,7 @@ def get_model(model_name, cache_dir, dtype, device, vllm=True):
             **kwargs,
         )
 
-    tokenizer = AutoTokenizer.from_pretrained(huggingface_model_name)
+    tokenizer = AutoTokenizer.from_pretrained(tokenizer_name)
 
     return model, tokenizer
 

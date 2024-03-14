@@ -1,9 +1,11 @@
-import os
 import json
+import os
 import random
+
 import numpy as np
 from datasets import load_dataset
-from .definitions import LEVELS, FIELDS
+
+from .definitions import FIELDS, LEVELS
 from .utils import load_pickle
 
 
