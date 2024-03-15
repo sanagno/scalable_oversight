@@ -48,6 +48,8 @@ FIELDS = {
     "quality": "a science communication field",
     "wiki_qa": "a science field",
     "boolq": "a science field",
+    "openbookqa": "a science field",
+    "commonsense_qa": "a science field",
 }
 
 HAS_DATASET_EXPLANATIONS = {
@@ -55,6 +57,8 @@ HAS_DATASET_EXPLANATIONS = {
     "quality": False,
     "wiki_qa": False,
     "boolq": True,
+    "openbookqa": False,
+    "commonsense_qa": False,
 }
 
 LEVELS = {

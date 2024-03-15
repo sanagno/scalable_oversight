@@ -163,6 +163,68 @@ def get_dataset_to_format(
             )
         choices = [" " + chr(65 + i) for i in range(2)]
         base_answer = "The right answer is the letter A"
+    elif dataset_name == "openbookqa":
+        dataset = load_dataset("allenai/openbookqa", cache_dir=cache_dir)["validation"]
+
+        data = []
+
+        for i in range(len(dataset)):
+            if i == MAX_SAMPLES:
+                break
+
+            question = dataset[i]["question_stem"]
+            correct_answers = [
+                dataset[i]["choices"]["text"][idx]
+                for idx in range(4)
+                if dataset[i]["answerKey"] == dataset[i]["choices"]["label"][idx]
+            ]
+            incorrect_answers = [
+                dataset[i]["choices"]["text"][idx]
+                for idx in range(4)
+                if dataset[i]["answerKey"] != dataset[i]["choices"]["label"][idx]
+            ]
+
+            data.append(
+                {
+                    "question": question,
+                    "correct_answers": correct_answers,
+                    "incorrect_answers": incorrect_answers,
+                    "explanation": "",
+                }
+            )
+        choices = [" " + chr(65 + i) for i in range(4)]
+        base_answer = "The right answer is the letter A"
+    elif dataset_name == "commonsense_qa":
+        dataset = load_dataset("tau/commonsense_qa", cache_dir=cache_dir)["validation"]
+
+        data = []
+
+        for i in range(len(dataset)):
+            if i == MAX_SAMPLES:
+                break
+
+            question = dataset[i]["question"]
+            correct_answers = [
+                dataset[i]["choices"]["text"][idx]
+                for idx in range(5)
+                if dataset[i]["answerKey"] == dataset[i]["choices"]["label"][idx]
+            ]
+            incorrect_answers = [
+                dataset[i]["choices"]["text"][idx]
+                for idx in range(5)
+                if dataset[i]["answerKey"] != dataset[i]["choices"]["label"][idx]
+            ]
+
+            data.append(
+                {
+                    "question": question,
+                    "correct_answers": correct_answers,
+                    "incorrect_answers": incorrect_answers,
+                    "explanation": "",
+                }
+            )
+        choices = [" " + chr(65 + i) for i in range(5)]
+        base_answer = "The right answer is the letter A"
     else:
         raise ValueError(f"Unknown dataset: {dataset_name}")
 
