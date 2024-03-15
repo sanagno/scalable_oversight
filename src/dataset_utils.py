@@ -11,11 +11,11 @@ from .utils import load_pickle
 MAX_SAMPLES = 200
 
 
-def get_dataset(
+def get_dataset_to_format(
     dataset_name,
     cache_dir,
     base_data_folder,
-    quality_num_charactes=3000,
+    quality_num_charactes=2000,
     wiki_qa_max_num_answers=8,  # only keep questions with up to this many answers ...
 ):
     if dataset_name == "gpqa":
@@ -28,11 +28,11 @@ def get_dataset(
             if i == MAX_SAMPLES:
                 break
             question = dataset[i]["Question"]
-            correct_answers = [dataset[i]["Correct Answer"]]
+            correct_answers = [dataset[i]["Correct Answer"].strip()]
             incorrect_answers = [
-                dataset[i]["Incorrect Answer 1"],
-                dataset[i]["Incorrect Answer 2"],
-                dataset[i]["Incorrect Answer 3"],
+                dataset[i]["Incorrect Answer 1"].strip(),
+                dataset[i]["Incorrect Answer 2"].strip(),
+                dataset[i]["Incorrect Answer 3"].strip(),
             ]
             explanation = dataset[i]["Explanation"]
 
@@ -65,7 +65,7 @@ def get_dataset(
 
             wrong_answers = list(range(4))
             # index starts from 1 ...
-            wrong_answers.remove(data[i]["questions"][0]["gold_label"] - 1)
+            wrong_answers.remove(dataset[i]["questions"][0]["gold_label"] - 1)
 
             idx = random.randint(
                 0, len(dataset[i]["article"]) - 1 - quality_num_charactes
@@ -77,12 +77,12 @@ def get_dataset(
                 {
                     "question": question,
                     "correct_answers": [
-                        data[i]["questions"][0]["options"][
-                            data[i]["questions"][0]["gold_label"] - 1
-                        ]
+                        dataset[i]["questions"][0]["options"][
+                            dataset[i]["questions"][0]["gold_label"] - 1
+                        ].strip()
                     ],
                     "incorrect_answers": [
-                        data[i]["questions"][0]["options"][wrong_answers[j]]
+                        dataset[i]["questions"][0]["options"][wrong_answers[j]].strip()
                         for j in range(3)
                     ],
                     "explanation": context,
@@ -124,12 +124,12 @@ def get_dataset(
                 {
                     "question": dataset[indices[0]]["question"],
                     "correct_answers": [
-                        dataset[i]["answer"]
+                        dataset[i]["answer"].strip()
                         for i in indices
                         if dataset[i]["label"] == 1
                     ],
                     "incorrect_answers": [
-                        dataset[i]["answer"]
+                        dataset[i]["answer"].strip()
                         for i in indices
                         if dataset[i]["label"] == 0
                     ],
@@ -148,13 +148,9 @@ def get_dataset(
             if i == MAX_SAMPLES:
                 break
             question = dataset[i]["question"]
-            assert dataset[i]["answer"].lower() in ["true", "false"]
-            correct_answers = (
-                ["True"] if dataset[i]["answer"].lower() == "true" else ["False"]
-            )
-            incorrect_answers = (
-                ["False"] if dataset[i]["answer"].lower() == "true" else ["True"]
-            )
+            assert dataset[i]["answer"] in [True, False]
+            correct_answers = ["True"] if dataset[i]["answer"] else ["False"]
+            incorrect_answers = ["False"] if dataset[i]["answer"] else ["True"]
             explanation = dataset[i]["passage"]
 
             data.append(
@@ -198,7 +194,7 @@ def get_dataset(
             advocate_explanations = load_pickle(advocate_file)
             advocate_explanations_idx = -1
 
-    dataset, choices, base_answer = get_dataset(
+    dataset, choices, base_answer = get_dataset_to_format(
         dataset_name=dataset_name,
         cache_dir=cache_dir,
         base_data_folder=args.base_data_folder,
@@ -224,14 +220,16 @@ def get_dataset(
                 content = (
                     ("You are given a question:\n\n" + question.strip())
                     + "\n\n"
-                    + f"The correct answer is: {answer}. "
-                    + f"Explain in a few sentences why the answer: {answer} is the correct one, as if you were {advocate_level_str}. "
-                    + f"Be as brief and concise as prossible. State exactly that the correct answer is {answer}."
+                    + f"The correct answer is: `{answer}`. "
+                    + f"Explain in a few sentences why the answer: `{answer}` is the correct one, as if you were {advocate_level_str}. "
+                    + f"Be as brief and concise as prossible. State exactly that the correct answer is `{answer}`."
                 )
 
                 if len(dataset_explanation) > 0:
-                    content += f"\nHere is some additional information to make your resaoning easier.\n"
-                    +f"```{dataset_explanation}```"
+                    content += (
+                        f"\nHere is some additional information to make your resaoning easier.\n"
+                        + f"```{dataset_explanation}```"
+                    )
 
                 conversation_history.append({"role": "user", "content": content})
 
@@ -246,8 +244,6 @@ def get_dataset(
         else:
             # judge
             random_order = np.random.permutation(list(range(len(answers))))
-
-            conversation_history = [{"role": "system", "content": system_prompt}]
 
             if advocate_level == "None" or advocate_level == "dataset":
                 # Only ask the question once, as we have either no explanation or only the correct explanation
@@ -279,7 +275,10 @@ def get_dataset(
                     + "\n\nReply only with the letter of the correct answer."
                     + explanation_str
                 )
-                conversation_history.append({"role": "user", "content": question_str})
+                conversation_history = [
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": question_str},
+                ]
 
                 data_conversations.append(
                     {
@@ -334,20 +333,22 @@ def get_dataset(
                         + "\n\nReply only with the letter of the correct answer."
                         + explanation_str
                     )
-                    conversation_history.append(
-                        {"role": "user", "content": question_str}
-                    )
+
+                    conversation_history = [
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": question_str},
+                    ]
 
                     data_conversations.append(
                         {
                             "conversation_history": conversation_history,
-                            "correct_answers_idx": [
+                            "wrong_answers_idx": [
                                 np.where(random_order == i)[0][0]
                                 for i in range(len(correct_answers), len(answers))
                             ],
                             "correct_answers_idx": [
                                 np.where(random_order == i)[0][0]
-                                for i in range(len(answers))
+                                for i in range(len(correct_answers))
                             ],
                             "explanation": dataset[i]["Explanation"]
                             if advocate_level == "dataset"

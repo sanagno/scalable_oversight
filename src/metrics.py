@@ -21,7 +21,7 @@ def get_metrics(
             continue
 
         if evaluation_method == "argmax":
-            value = np.argmax(probabilities[i]) == dataset[i]["correct_answer_idx"]
+            value = np.argmax(probabilities[i]) in dataset[i]["correct_answers_idx"]
         else:
             raise ValueError(f"Unknown method: {evaluation_method}")
 
@@ -30,13 +30,12 @@ def get_metrics(
         elif advocate_level == "dataset":
             metrics["dataset_explanation"].append(value)
         elif advocate_level in LEVELS:
-            if dataset_name == "gpqa" or dataset_name == "quality":
-                if i % 4 == 0:
-                    metrics["correct_advocate_explanation"].append(value)
-                else:
-                    metrics["incorrect_advocate_explanation"].append(value)
+            assert dataset[i]["explanation_is_correct"] is not None
+
+            if dataset[i]["explanation_is_correct"]:
+                metrics["correct_advocate_explanation"].append(value)
             else:
-                raise ValueError(f"Unknown dataset_name: {dataset_name}")
+                metrics["incorrect_advocate_explanation"].append(value)
         else:
             raise ValueError(f"Unknown advocate_level: {advocate_level}")
 

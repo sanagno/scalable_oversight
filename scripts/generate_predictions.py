@@ -67,10 +67,7 @@ if __name__ == "__main__":
                 choices=choices,
                 base_answer=base_answer,
             )
-                        
-            print('TODO')
-            import IPython; IPython.embed(); exit(1)
-            
+
             save_pickle(
                 probabilities,
                 os.path.join(
