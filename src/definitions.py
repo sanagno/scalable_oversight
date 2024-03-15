@@ -28,17 +28,33 @@ HUGGIGNFACE_MODEL_PATHS = {
 
 MODELS = list(HUGGIGNFACE_MODEL_PATHS.keys())
 
-MAX_MODEL_LEN = {"Llama-2-7b-chat": 4096, "Llama-2-13b-chat": 4096, "Llama-2-70b-chat": 4096, "falcon-40b": 2048, "Mixtral": 32000}
-TOKENIZER_NAME = {"Llama-2-7b-chat": "meta-llama/Llama-2-7b-chat-hf", "Llama-2-13b-chat": "meta-llama/Llama-2-13b-chat-hf", "Llama-2-70b-chat": "meta-llama/Llama-2-70b-chat-hf", "falcon-40b": "tiiuae/falcon-7b-instruct", "Mixtral": "mistralai/Mixtral-8x7B-Instruct-v0.1"}
+MAX_MODEL_LEN = {
+    "Llama-2-7b-chat": 4096,
+    "Llama-2-13b-chat": 4096,
+    "Llama-2-70b-chat": 4096,
+    "falcon-40b": 2048,
+    "Mixtral": 32000,
+}
+TOKENIZER_NAME = {
+    "Llama-2-7b-chat": "meta-llama/Llama-2-7b-chat-hf",
+    "Llama-2-13b-chat": "meta-llama/Llama-2-13b-chat-hf",
+    "Llama-2-70b-chat": "meta-llama/Llama-2-70b-chat-hf",
+    "falcon-40b": "tiiuae/falcon-7b-instruct",
+    "Mixtral": "mistralai/Mixtral-8x7B-Instruct-v0.1",
+}
 
 FIELDS = {
     "gpqa": "a science field",
     "quality": "a science field",
+    "wiki_qa": "a science field",
+    "boolq": "a science field",
 }
 
 HAS_DATASET_EXPLANATIONS = {
     "gpqa": True,
     "quality": False,
+    "wiki_qa": False,
+    "boolq": True,
 }
 
 LEVELS = {
