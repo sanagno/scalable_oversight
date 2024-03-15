@@ -5,7 +5,7 @@ import time
 
 import torch
 
-from .definitions import APPEND_TOKENS, MODELS
+from .definitions import MODELS
 
 
 def get_advocate_data_folder(base_data_folder, dataset, model_advocate, num_samples):
@@ -40,9 +40,6 @@ def get_judge_args(notebook=False, notebook_args=[]):
         args = parser.parse_known_args(notebook_args)[0]
     else:
         args = parser.parse_args()
-
-    # tokens appended before checking for specific choices
-    args.append_tokens = APPEND_TOKENS[args.model_judge]
 
     args.log_folder = (
         f"{args.base_logdir}/{args.model_judge}/{time.strftime('%Y-%m-%d-%H-%M-%S')}"
