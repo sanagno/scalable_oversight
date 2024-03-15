@@ -10,8 +10,13 @@ from tqdm import tqdm
 
 from src.arguments import get_judge_args
 from src.dataset_utils import get_dataset
-from src.definitions import (FIELDS, HAS_DATASET_EXPLANATIONS, LEVELS,
-                             POSSIBLE_ADVOCATES, SYSTEM_PROMPTS)
+from src.definitions import (
+    FIELDS,
+    HAS_DATASET_EXPLANATIONS,
+    LEVELS,
+    POSSIBLE_ADVOCATES,
+    SYSTEM_PROMPTS,
+)
 from src.metrics import get_metrics
 from src.model_utils import get_answer_probabilities, get_model
 from src.utils import save_pickle, set_seed
@@ -74,7 +79,7 @@ if __name__ == "__main__":
             metrics = get_metrics(
                 dataset_name=args.dataset,
                 advocate_level=advocate_level,
-                probabiltiies=probabilities,
+                probabilities=probabilities,
                 dataset=dataset,
                 evaluation_method=args.evaluation_method,
             )

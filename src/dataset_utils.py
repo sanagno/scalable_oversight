@@ -9,6 +9,47 @@ from .definitions import FIELDS, LEVELS
 from .utils import load_pickle
 
 
+def get_wikiqa(cache_dir, max_num_answers=8):
+    dataset = load_dataset("wiki_qa", cache_dir=cache_dir)["test"]
+
+    data = []
+
+    i = 0
+    while i < len(dataset):
+        question_id = dataset[i]["question_id"]
+
+        indices = [i]
+        i += 1
+
+        while i < len(dataset):
+            if question_id == dataset[i]["question_id"]:
+                indices.append(i)
+                i += 1
+            else:
+                break
+
+        if (
+            len(indices) == 0
+            or np.where([dataset[x]["label"] == 1 for x in indices])[0].shape[0] != 1
+            or len(indices) > max_num_answers
+        ):
+            continue
+
+        data.append(
+            {
+                "question": dataset[indices[0]]["question"],
+                "incorrect_answers": [
+                    dataset[i]["answer"] for i in indices if dataset[i]["label"] == 0
+                ],
+                "correct_answer": [
+                    dataset[i]["answer"] for i in indices if dataset[i]["label"] == 1
+                ][0],
+            }
+        )
+
+    return data
+
+
 def get_dataset(
     args,
     dataset_name,
@@ -327,6 +368,8 @@ def get_dataset(
                 else:
                     raise ValueError(f"Unknown explanation_level: {advocate_level}")
         choices = [chr(65 + i) for i in range(4)]
+    elif dataset_name == "TODO":
+        raise NotImplementedError("TODO")
     else:
         raise ValueError(f"Unknown dataset: {dataset_name}")
 

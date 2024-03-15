@@ -1,5 +1,6 @@
 import argparse
 import logging
+import sys
 import os
 import time
 
@@ -56,6 +57,10 @@ def get_judge_args(notebook=False, notebook_args=[]):
     fh = logging.FileHandler(args.logfile, mode="w")
     fh.setLevel(logging.DEBUG)
     logger.addHandler(fh)
+    # add stdout handler
+    ch = logging.StreamHandler(sys.stdout)
+    ch.setLevel(logging.INFO)
+    logger.addHandler(ch)
 
     logger.info(f"Starting run for model: {args.model_judge}")
 

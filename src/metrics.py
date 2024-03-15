@@ -30,7 +30,7 @@ def get_metrics(
         elif advocate_level == "dataset":
             metrics["dataset_explanation"].append(value)
         elif advocate_level in LEVELS:
-            if dataset_name == "gpqa":
+            if dataset_name == "gpqa" or dataset_name == "quality":
                 if i % 4 == 0:
                     metrics["correct_advocate_explanation"].append(value)
                 else:
