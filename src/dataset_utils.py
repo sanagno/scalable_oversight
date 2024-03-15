@@ -222,7 +222,7 @@ def get_dataset(
                     + "\n\n"
                     + f"The correct answer is: `{answer}`. "
                     + f"Explain in a few sentences why the answer: `{answer}` is the correct one, as if you were {advocate_level_str}. "
-                    + f"Be as brief and concise as prossible. State exactly that the correct answer is `{answer}`."
+                    + f"Be very brief and concise. State exactly that the correct answer is `{answer}`."
                 )
 
                 if len(dataset_explanation) > 0:

@@ -7,7 +7,12 @@ from tqdm import tqdm
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from vllm import LLM, SamplingParams
 
-from .definitions import HUGGIGNFACE_MODEL_PATHS, MAX_MODEL_LEN, TOKENIZER_NAME, OVERRIDE_CHAT_TEMPLATES
+from .definitions import (
+    HUGGIGNFACE_MODEL_PATHS,
+    MAX_MODEL_LEN,
+    TOKENIZER_NAME,
+    OVERRIDE_CHAT_TEMPLATES,
+)
 
 
 def parse_dtype(dtype):
@@ -72,11 +77,12 @@ def get_model(model_name, cache_dir, dtype, device, vllm=True):
         )
 
     tokenizer = AutoTokenizer.from_pretrained(tokenizer_name)
-    
+
     if model_name in OVERRIDE_CHAT_TEMPLATES:
         tokenizer.chat_template = OVERRIDE_CHAT_TEMPLATES[model_name]
 
     return model, tokenizer
+
 
 @torch.no_grad()
 def get_answer_probabilities(
@@ -87,11 +93,13 @@ def get_answer_probabilities(
         judge_tokenizer.encode(choices[i], add_special_tokens=False)[-1]
         for i in range(len(choices))
     ]
-    
+
     if type(judge_model) == LLM:
         prompts = [
             judge_tokenizer.apply_chat_template(
-                dataset[i]["conversation_history"] + [{"role": "assistant", "content": base_answer}], tokenize=False,
+                dataset[i]["conversation_history"]
+                + [{"role": "assistant", "content": base_answer}],
+                tokenize=False,
             )
             for i in range(len(dataset))
         ]
@@ -101,11 +109,11 @@ def get_answer_probabilities(
             ]
             for prompt in prompts
         ]
-        
+
         # Remove from the end of the message ids until we find one of the choice_ids
         new_inputs = []
         for i, input_ids in enumerate(inputs):
-            for j in range(len(input_ids)-1, -1, -1):
+            for j in range(len(input_ids) - 1, -1, -1):
                 if input_ids[j] in choices_ids:
                     new_inputs.append(input_ids[:j])
                     break
@@ -151,7 +159,7 @@ def get_model_generations(
     advocate_model,
     advocate_tokenizer,
     dataset,
-    max_new_tokens=256,
+    max_new_tokens=512,
     top_k=50,
     top_p=0.95,
     do_sample=True,

@@ -45,7 +45,7 @@ TOKENIZER_NAME = {
 
 FIELDS = {
     "gpqa": "a science field",
-    "quality": "a science field",
+    "quality": "a science communication field",
     "wiki_qa": "a science field",
     "boolq": "a science field",
 }
