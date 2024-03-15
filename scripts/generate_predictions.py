@@ -44,7 +44,7 @@ if __name__ == "__main__":
             ):
                 continue
 
-            dataset, choices = get_dataset(
+            dataset, choices, base_answer = get_dataset(
                 args,
                 args.dataset,
                 args.cache_dir,
@@ -65,9 +65,12 @@ if __name__ == "__main__":
                 judge_tokenizer=judge_tokenizer,
                 dataset=dataset,
                 choices=choices,
-                append_tokens=args.append_tokens,
+                base_answer=base_answer,
             )
-
+                        
+            print('TODO')
+            import IPython; IPython.embed(); exit(1)
+            
             save_pickle(
                 probabilities,
                 os.path.join(

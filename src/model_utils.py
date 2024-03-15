@@ -7,7 +7,7 @@ from tqdm import tqdm
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from vllm import LLM, SamplingParams
 
-from .definitions import HUGGIGNFACE_MODEL_PATHS, MAX_MODEL_LEN, TOKENIZER_NAME
+from .definitions import HUGGIGNFACE_MODEL_PATHS, MAX_MODEL_LEN, TOKENIZER_NAME, OVERRIDE_CHAT_TEMPLATES
 
 
 def parse_dtype(dtype):
@@ -24,15 +24,6 @@ def parse_dtype(dtype):
 def get_model(model_name, cache_dir, dtype, device, vllm=True):
     device_map = "auto" if device.type == "cpu" else (device.index or 0)
 
-    has_flash_attn = False
-    try:
-        import flash_attn
-
-        has_flash_attn = True
-    except ImportError:
-        print("Flash attention not found.")
-        pass
-
     huggingface_model_name = HUGGIGNFACE_MODEL_PATHS[model_name][dtype]
     tokenizer_name = TOKENIZER_NAME[model_name]
 
@@ -40,7 +31,7 @@ def get_model(model_name, cache_dir, dtype, device, vllm=True):
         if dtype in ["float32", "float16"]:
             kwargs = {"dtype": dtype}
         elif dtype == "int8":
-            kwargs = {"quantization": "GPTQ"}
+            kwargs = {"quantization": "GPTQ", "dtype": torch.float16}
         else:
             raise ValueError(f"Invalid dtype: {dtype}")
 
@@ -49,9 +40,19 @@ def get_model(model_name, cache_dir, dtype, device, vllm=True):
             download_dir=cache_dir,
             max_model_len=MAX_MODEL_LEN[model_name],
             max_num_seqs=8,
+            trust_remote_code=True,
             **kwargs,
         )
     else:
+        has_flash_attn = False
+        try:
+            import flash_attn
+
+            has_flash_attn = True
+        except ImportError:
+            print("Flash attention not found.")
+            pass
+
         if dtype in ["float32", "float16"]:
             kwargs = {
                 "torch_dtype": parse_dtype(dtype),
@@ -71,44 +72,26 @@ def get_model(model_name, cache_dir, dtype, device, vllm=True):
         )
 
     tokenizer = AutoTokenizer.from_pretrained(tokenizer_name)
+    
+    if model_name in OVERRIDE_CHAT_TEMPLATES:
+        tokenizer.chat_template = OVERRIDE_CHAT_TEMPLATES[model_name]
 
     return model, tokenizer
 
-
-# def get_model_probabilities(
-#     judge_model, judge_tokenizer, conversation_history, append_tokens, choices_ids
-# ):
-#     prompt = judge_tokenizer.apply_chat_template(conversation_history, tokenize=False)
-#     inputs = judge_tokenizer(
-#         prompt, return_tensors="pt", truncation=False, add_special_tokens=False
-#     )["input_ids"]
-#     if len(append_tokens) > 0:
-#         inputs = torch.cat(
-#             [inputs, torch.tensor(append_tokens)[None].to(inputs.device)], dim=-1
-#         )
-
-#     outputs = judge_model(inputs.to(judge_model.device))
-
-#     probs = torch.nn.functional.softmax(outputs.logits[0, -1], dim=-1)
-
-#     return probs[choices_ids].detach().cpu().numpy()
-
-
 @torch.no_grad()
 def get_answer_probabilities(
-    judge_model, judge_tokenizer, dataset, choices, append_tokens
+    judge_model, judge_tokenizer, dataset, choices, base_answer
 ):
+    ## This only works for single token answers...
     choices_ids = [
-        judge_tokenizer.encode(choices[i], add_special_tokens=False)
+        judge_tokenizer.encode(choices[i], add_special_tokens=False)[-1]
         for i in range(len(choices))
     ]
-    assert all([len(choices_ids[i]) == 1 for i in range(1, len(choices_ids))])
-    choices_ids = [x[0] for x in choices_ids]
-
+    
     if type(judge_model) == LLM:
         prompts = [
             judge_tokenizer.apply_chat_template(
-                dataset[i]["conversation_history"], tokenize=False
+                dataset[i]["conversation_history"] + [{"role": "assistant", "content": base_answer}], tokenize=False,
             )
             for i in range(len(dataset))
         ]
@@ -118,11 +101,17 @@ def get_answer_probabilities(
             ]
             for prompt in prompts
         ]
-        if len(append_tokens) > 0:
-            inputs = [x + append_tokens for x in inputs]
+        
+        # Remove from the end of the message ids until we find one of the choice_ids
+        new_inputs = []
+        for i, input_ids in enumerate(inputs):
+            for j in range(len(input_ids)-1, -1, -1):
+                if input_ids[j] in choices_ids:
+                    new_inputs.append(input_ids[:j])
+                    break
 
         outputs = judge_model.generate(
-            prompt_token_ids=inputs,
+            prompt_token_ids=new_inputs,
             sampling_params=SamplingParams(
                 **{"max_tokens": 1, "n": 1, "logprobs": len(judge_tokenizer)}
             ),
@@ -136,19 +125,15 @@ def get_answer_probabilities(
                 probs = [np.nan for _ in choices_ids]
             probabilities.append(probs)
     else:
+        raise NotImplementedError("deprecated")
         probabilities = []
         for i in tqdm(range(len(dataset)), desc="Evaluating"):
             prompt = judge_tokenizer.apply_chat_template(
-                dataset[i]["conversation_history"], tokenize=False
+                dataset[i]["conversation_history"]
             )
             inputs = judge_tokenizer(
                 prompt, return_tensors="pt", truncation=False, add_special_tokens=False
             )["input_ids"]
-            if len(append_tokens) > 0:
-                inputs = torch.cat(
-                    [inputs, torch.tensor(append_tokens)[None].to(inputs.device)],
-                    dim=-1,
-                )
 
             outputs = judge_model(inputs.to(judge_model.device))
 

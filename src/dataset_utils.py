@@ -219,7 +219,8 @@ def get_dataset(
                 else:
                     raise ValueError(f"Unknown explanation_level: {advocate_level}")
 
-        choices = [chr(65 + i) for i in range(4)]
+        choices = [" " + chr(65 + i) for i in range(4)]
+        base_answer = "The right answer is the letter A"
     elif dataset_name == "quality":
         # load jsonl
         filename = os.path.join(
@@ -367,13 +368,12 @@ def get_dataset(
 
                 else:
                     raise ValueError(f"Unknown explanation_level: {advocate_level}")
-        choices = [chr(65 + i) for i in range(4)]
-    elif dataset_name == "TODO":
-        raise NotImplementedError("TODO")
+        choices = [" " + chr(65 + i) for i in range(4)]
+        base_answer = "The right answer is the letter A"
     else:
         raise ValueError(f"Unknown dataset: {dataset_name}")
 
     if is_advocate:
         return data_conversations
 
-    return data_conversations, choices
+    return data_conversations, choices, base_answer
