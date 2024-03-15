@@ -18,6 +18,7 @@ def get_dataset_to_format(
     quality_num_charactes=2000,
     wiki_qa_max_num_answers=8,  # only keep questions with up to this many answers ...
 ):
+    base_answer = "The right answer is the letter A"
     if dataset_name == "gpqa":
         dataset = load_dataset(
             "Idavidrein/gpqa", cache_dir=cache_dir, name="gpqa_diamond"
@@ -27,7 +28,7 @@ def get_dataset_to_format(
         for i in range(len(dataset)):
             if i == MAX_SAMPLES:
                 break
-            question = dataset[i]["Question"]
+            question = "You are given a question. Question: " + dataset[i]["Question"]
             correct_answers = [dataset[i]["Correct Answer"].strip()]
             incorrect_answers = [
                 dataset[i]["Incorrect Answer 1"].strip(),
@@ -46,7 +47,6 @@ def get_dataset_to_format(
             )
 
         choices = [" " + chr(65 + i) for i in range(4)]
-        base_answer = "The right answer is the letter A"
     elif dataset_name == "quality":
         filename = os.path.join(
             base_data_folder, "quality", "QuALITY.v1.0.1.htmlstripped.train"
@@ -61,7 +61,10 @@ def get_dataset_to_format(
             if i == MAX_SAMPLES:
                 break
             # only take the first question
-            question = dataset[i]["questions"][0]["question"]
+            question = (
+                "You are given a question. Question: "
+                + dataset[i]["questions"][0]["question"]
+            )
 
             wrong_answers = list(range(4))
             # index starts from 1 ...
@@ -90,7 +93,6 @@ def get_dataset_to_format(
             )
 
         choices = [" " + chr(65 + i) for i in range(4)]
-        base_answer = "The right answer is the letter A"
     elif dataset_name == "wiki_qa":
         dataset = load_dataset("wiki_qa", cache_dir=cache_dir)["test"]
 
@@ -122,7 +124,8 @@ def get_dataset_to_format(
 
             data.append(
                 {
-                    "question": dataset[indices[0]]["question"],
+                    "question": "You are given a question. Question: "
+                    + dataset[indices[0]]["question"],
                     "correct_answers": [
                         dataset[i]["answer"].strip()
                         for i in indices
@@ -138,7 +141,6 @@ def get_dataset_to_format(
             )
 
         choices = [" " + chr(65 + i) for i in range(wiki_qa_max_num_answers)]
-        base_answer = "The right answer is the letter A"
     elif dataset_name == "boolq":
         dataset = load_dataset("boolq", cache_dir=cache_dir)["validation"]
 
@@ -147,7 +149,7 @@ def get_dataset_to_format(
         for i in range(len(dataset)):
             if i == MAX_SAMPLES:
                 break
-            question = dataset[i]["question"]
+            question = "You are given a question. Question: " + dataset[i]["question"]
             assert dataset[i]["answer"] in [True, False]
             correct_answers = ["True"] if dataset[i]["answer"] else ["False"]
             incorrect_answers = ["False"] if dataset[i]["answer"] else ["True"]
@@ -162,7 +164,6 @@ def get_dataset_to_format(
                 }
             )
         choices = [" " + chr(65 + i) for i in range(2)]
-        base_answer = "The right answer is the letter A"
     elif dataset_name == "openbookqa":
         dataset = load_dataset("allenai/openbookqa", cache_dir=cache_dir)["validation"]
 
@@ -172,7 +173,7 @@ def get_dataset_to_format(
             if i == MAX_SAMPLES:
                 break
 
-            question = dataset[i]["question_stem"]
+            question = "Continue the following sentence: " + dataset[i]["question_stem"]
             correct_answers = [
                 dataset[i]["choices"]["text"][idx]
                 for idx in range(4)
@@ -193,7 +194,6 @@ def get_dataset_to_format(
                 }
             )
         choices = [" " + chr(65 + i) for i in range(4)]
-        base_answer = "The right answer is the letter A"
     elif dataset_name == "commonsense_qa":
         dataset = load_dataset("tau/commonsense_qa", cache_dir=cache_dir)["validation"]
 
@@ -203,7 +203,7 @@ def get_dataset_to_format(
             if i == MAX_SAMPLES:
                 break
 
-            question = dataset[i]["question"]
+            question = "You are given a question. Question: " + dataset[i]["question"]
             correct_answers = [
                 dataset[i]["choices"]["text"][idx]
                 for idx in range(5)
@@ -224,7 +224,73 @@ def get_dataset_to_format(
                 }
             )
         choices = [" " + chr(65 + i) for i in range(5)]
-        base_answer = "The right answer is the letter A"
+    elif dataset_name == "piqa":
+        dataset = load_dataset("piqa", cache_dir=cache_dir)["validation"]
+
+        data = []
+
+        for i in range(len(dataset)):
+            if i == MAX_SAMPLES:
+                break
+
+            question = (
+                "You are given a goal. You have to choose the best solution based on commonsense reasoning. Goal: "
+                + dataset[i]["goal"]
+            )
+            correct_answers = [
+                dataset[i]["sol1"] if dataset[i]["label"] == 0 else dataset[i]["sol2"]
+            ]
+            incorrect_answers = [
+                dataset[i]["sol2"] if dataset[i]["label"] == 0 else dataset[i]["sol1"]
+            ]
+
+            data.append(
+                {
+                    "question": question,
+                    "correct_answers": correct_answers,
+                    "incorrect_answers": incorrect_answers,
+                    "explanation": "",
+                }
+            )
+
+        choices = [" " + chr(65 + i) for i in range(2)]
+    elif dataset_name == "siqa":
+        dataset = load_dataset("social_i_qa", cache_dir=cache_dir)["validation"]
+
+        data = []
+
+        for i in range(len(dataset)):
+            if i == MAX_SAMPLES:
+                break
+
+            question = (
+                "Answer the following question based on the provided context. Question: "
+                + dataset[i]["question"]
+                + " Context: "
+                + dataset[i]["context"]
+            )
+
+            answers = [
+                dataset[i]["answerA"],
+                dataset[i]["answerB"],
+                dataset[i]["answerC"],
+            ]
+
+            correct_answer_idx = int(dataset[i]["label"]) - 1
+
+            correct_answers = [answers[correct_answer_idx]]
+            answers.pop(correct_answer_idx)
+            incorrect_answers = answers
+
+            data.append(
+                {
+                    "question": question,
+                    "correct_answers": correct_answers,
+                    "incorrect_answers": incorrect_answers,
+                    "explanation": "",
+                }
+            )
+        choices = [" " + chr(65 + i) for i in range(3)]
     else:
         raise ValueError(f"Unknown dataset: {dataset_name}")
 
@@ -280,10 +346,10 @@ def get_dataset(
             for answer_idx, answer in enumerate(correct_answers + incorrect_answers):
                 conversation_history = [{"role": "system", "content": system_prompt}]
                 content = (
-                    ("You are given a question:\n\n" + question.strip())
+                    question.strip()
                     + "\n\n"
                     + f"The correct answer is: `{answer}`. "
-                    + f"Explain in a few sentences why the answer: `{answer}` is the correct one, as if you were {advocate_level_str}. "
+                    + f"Explain in a few sentences why the answer: `{answer}` is the correct one, remember that you are {advocate_level_str}. "
                     + f"Be very brief and concise. State exactly that the correct answer is `{answer}`."
                 )
 
@@ -326,7 +392,7 @@ def get_dataset(
                 question_str = (
                     (
                         question.strip()
-                        + "\n\nChoices:\n"
+                        + "\n\nChoose one from the choices:\n"
                         + "\n".join(
                             [
                                 f"{chr(65 + i)}) {answers[j].strip()}"
@@ -384,7 +450,7 @@ def get_dataset(
                     question_str = (
                         (
                             question.strip()
-                            + "\n\nChoices:\n"
+                            + "\n\nChoose one from the choices:\n"
                             + "\n".join(
                                 [
                                     f"{chr(65 + i)}) {answers[j].strip()}"
