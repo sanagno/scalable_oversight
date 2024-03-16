@@ -1,6 +1,7 @@
 import json
 import os
 import random
+import copy
 
 import numpy as np
 from datasets import load_dataset
@@ -372,6 +373,18 @@ def get_dataset(
         else:
             # judge
             random_order = np.random.permutation(list(range(len(answers))))
+            
+            common = {
+                "wrong_answers_idx": [
+                    np.where(random_order == i)[0][0]
+                    for i in range(len(correct_answers), len(answers))
+                ],
+                "correct_answers_idx": [
+                    np.where(random_order == i)[0][0]
+                    for i in range(len(correct_answers))
+                ],
+                "random_order": random_order,
+            }
 
             if advocate_level == "None" or advocate_level == "dataset":
                 # Only ask the question once, as we have either no explanation or only the correct explanation
@@ -379,7 +392,7 @@ def get_dataset(
                 explanation_str = (
                     (
                         "\n\nHere is an explanation to help you with your answer:\n"
-                        + dataset[i]["Explanation"]
+                        + dataset_explanation
                     )
                     if advocate_level == "dataset"
                     else ""
@@ -411,21 +424,12 @@ def get_dataset(
                 data_conversations.append(
                     {
                         "conversation_history": conversation_history,
-                        "correct_answers_idx": [
-                            np.where(random_order == i)[0][0]
-                            for i in range(len(correct_answers), len(answers))
-                        ],
-                        "correct_answers_idx": [
-                            np.where(random_order == i)[0][0]
-                            for i in range(len(answers))
-                        ],
-                        "explanation": dataset[i]["Explanation"]
+                        "explanation": dataset_explanation
                         if advocate_level == "dataset"
                         else None,
                         "explanation_level": advocate_level,
-                        "random_order": random_order,
                         "explanation_is_correct": explanation_is_correct,
-                    }
+                    } | copy.deepcopy(common)
                 )
 
             elif advocate_level in LEVELS:
@@ -465,26 +469,19 @@ def get_dataset(
                     conversation_history = [
                         {"role": "system", "content": system_prompt},
                         {"role": "user", "content": question_str},
-                    ]
+                    ]   
 
                     data_conversations.append(
                         {
                             "conversation_history": conversation_history,
-                            "wrong_answers_idx": [
-                                np.where(random_order == i)[0][0]
-                                for i in range(len(correct_answers), len(answers))
-                            ],
-                            "correct_answers_idx": [
-                                np.where(random_order == i)[0][0]
-                                for i in range(len(correct_answers))
-                            ],
-                            "explanation": dataset[i]["Explanation"]
-                            if advocate_level == "dataset"
-                            else None,
+                            "explanation": advocate_explanation['generation'] if include_explanation else None,
+                            "include_explanation": include_explanation,
                             "explanation_level": advocate_level,
-                            "random_order": random_order,
                             "explanation_is_correct": explanation_is_correct,
-                        }
+                            "explanation_advocate_idx": np.where(
+                                answer_idx == random_order
+                            )[0][0],
+                        } | copy.deepcopy(common)
                     )
             else:
                 raise ValueError(f"Unknown explanation_level: {advocate_level}")

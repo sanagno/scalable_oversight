@@ -34,9 +34,7 @@ if __name__ == "__main__":
         k: v.format(field=FIELDS[args.dataset]) for k, v in SYSTEM_PROMPTS.items()
     }
 
-    for system_prompt_name, system_prompt in tqdm(
-        system_prompts.items(), desc="System prompts"
-    ):
+    for system_prompt_name, system_prompt in system_prompts.items():
         for advocate_level, include_explanation in POSSIBLE_ADVOCATES:
             if (
                 advocate_level == "dataset"
