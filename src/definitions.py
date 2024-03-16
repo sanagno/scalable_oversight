@@ -90,7 +90,7 @@ _falcon_chat_template = """
 {% endif %}
 {% for message in loop_messages %}
     {% if (message['role'] == 'user') != (loop.index0 % 2 == 0) %}
-        {{ raise_exception('Conversation roles must alternate user/assistant/user/assistant/...') }}
+        {{ raise_exception('Invalid Conversation') }}
     {% endif %}
     {% if loop.index0 == 0 %}
         {{ system_message }}
@@ -102,7 +102,8 @@ _falcon_chat_template = """
     {% endif %}
 {% endfor %}
 {% if add_generation_prompt %}
-    {{ '\\n\\nAssistant:' }}{% endif %}"
+    {{ '\\n\\nAssistant:' }}
+{% endif %}"
 """
 
 # Append system prompt at the beginning of the first user message
@@ -117,7 +118,7 @@ _mixtral_chat_template = """
 {% endif %}
 {% for message in loop_messages %}
     {% if (message['role'] == 'user') != (loop.index0 % 2 == 0) %}
-        {{ raise_exception('Conversation roles must alternate user/assistant/user/assistant/...') }}
+        {{ raise_exception('Invalid Conversation')
     {% endif %}
     {% if loop.index0 == 0 %}
         {{ system_message }}
