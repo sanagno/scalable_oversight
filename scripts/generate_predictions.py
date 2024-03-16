@@ -74,6 +74,14 @@ if __name__ == "__main__":
                 ),
             )
 
+            save_pickle(
+                dataset,
+                os.path.join(
+                    args.log_folder,
+                    f"dataset_{system_prompt_name}_{advocate_level}_{include_explanation}.pkl",
+                ),
+            )
+
             metrics = get_metrics(
                 dataset_name=args.dataset,
                 advocate_level=advocate_level,

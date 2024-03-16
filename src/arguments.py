@@ -43,12 +43,10 @@ def get_judge_args(notebook=False, notebook_args=[]):
     else:
         args = parser.parse_args()
 
-    args.log_folder = (
-        f"{args.base_logdir}/{args.model_judge}/{args.dataset}/{time.strftime('%Y-%m-%d-%H-%M-%S')}"
-    )
+    args.log_folder = f"{args.base_logdir}/{args.model_judge}/{args.dataset}/{time.strftime('%Y-%m-%d-%H-%M-%S')}"
     os.makedirs(args.log_folder, exist_ok=True)
     args.logfile = f"{args.log_folder}/log.txt"
-    
+
     # log args
     with open(f"{args.log_folder}/args.txt", "w") as f:
         json.dump(vars(args), f, indent=4)
