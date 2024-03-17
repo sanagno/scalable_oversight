@@ -23,6 +23,12 @@ DATASET_NAMES = {
     "wiki_qa": "WikiQA",
 }
 
+MODEL_NAMES = {
+    "Llama-2-70b-chat": "$\it{Llama}$",
+    "Mixtral": "$\it{Mixtral}$",
+    "falcon-40b": "$\it{Falcon}$",
+}
+
 RANDOM_PERFORMANCE = {
     "gpqa": 0.25,
     "quality": 0.25,
