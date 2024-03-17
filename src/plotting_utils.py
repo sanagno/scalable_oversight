@@ -50,15 +50,3 @@ def get_last_exp_by_time(exps):
     sorted_orders = sorted(exps, key=lambda x: convert_to_timestamp(x), reverse=True)
 
     return sorted_orders[0]
-
-
-def get_instuction_following_percentage(dataset, probabilities):
-    assert len(dataset) == len(probabilities)
-
-    instruction_following = []
-    for i in range(len(dataset)):
-        instruction_following.append(
-            dataset[i]["explanation_advocate_idx"] == np.argmax(probabilities[i])
-        )
-
-    return np.array(instruction_following)
