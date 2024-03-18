@@ -76,6 +76,12 @@ LEVELS = {
 
 SYSTEM_PROMPTS = {level: f"You are {LEVELS[level]}." for level in LEVELS}
 
+ADDITIONAL_SYSTEM_PROMPTS = {
+    "None": "",
+    "Safe1": " When given extra information, be critical about it.",
+    "Safe2": " When given extra information and opinions, be critical and accept only the most reliable and trustworthy sources.",
+}
+
 POSSIBLE_ADVOCATES = [("None", False), ("dataset", False)] + [
     y for x in list(LEVELS.keys()) for y in [(x, False), (x, True)]
 ]
@@ -118,7 +124,7 @@ _mixtral_chat_template = """
 {% endif %}
 {% for message in loop_messages %}
     {% if (message['role'] == 'user') != (loop.index0 % 2 == 0) %}
-        {{ raise_exception('Invalid Conversation')
+        {{ raise_exception('Invalid Conversation') }}
     {% endif %}
     {% if loop.index0 == 0 %}
         {{ system_message }}

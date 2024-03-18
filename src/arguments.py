@@ -7,7 +7,7 @@ import json
 
 import torch
 
-from .definitions import MODELS
+from .definitions import MODELS, ADDITIONAL_SYSTEM_PROMPTS
 
 
 def get_advocate_data_folder(base_data_folder, dataset, model_advocate, num_samples):
@@ -37,13 +37,19 @@ def get_judge_args(notebook=False, notebook_args=[]):
     parser.add_argument("--model_advocate", type=str, default="Llama-2-13b-chat")
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--num_samples", type=int, default=None)
+    parser.add_argument("--additional_system_prompt", type=str, default="None", choices=list(ADDITIONAL_SYSTEM_PROMPTS.keys()) )
 
     if notebook:
         args = parser.parse_known_args(notebook_args)[0]
     else:
         args = parser.parse_args()
 
-    args.log_folder = f"{args.base_logdir}/{args.model_judge}/{args.dataset}/{time.strftime('%Y-%m-%d-%H-%M-%S')}"
+    # for legacy reasons
+    if args.additional_system_prompt == "None":
+        args.log_folder = f"{args.base_logdir}/{args.model_judge}/{args.dataset}/{time.strftime('%Y-%m-%d-%H-%M-%S')}"
+    else:
+        args.log_folder = f"{args.base_logdir}/{args.model_judge}/{args.dataset}/{args.additional_system_prompt}/{time.strftime('%Y-%m-%d-%H-%M-%S')}"
+        
     os.makedirs(args.log_folder, exist_ok=True)
     args.logfile = f"{args.log_folder}/log.txt"
 

@@ -16,6 +16,7 @@ from src.definitions import (
     LEVELS,
     POSSIBLE_ADVOCATES,
     SYSTEM_PROMPTS,
+    ADDITIONAL_SYSTEM_PROMPTS
 )
 from src.metrics import get_metrics
 from src.model_utils import get_answer_probabilities, get_model
@@ -41,12 +42,14 @@ if __name__ == "__main__":
                 and not HAS_DATASET_EXPLANATIONS[args.dataset]
             ):
                 continue
+            
+            extra_system_prompt = ADDITIONAL_SYSTEM_PROMPTS[args.additional_system_prompt]
 
             dataset, choices, base_answer = get_dataset(
                 args,
                 args.dataset,
                 args.cache_dir,
-                system_prompt=system_prompt,
+                system_prompt=system_prompt + extra_system_prompt,
                 is_advocate=False,
                 num_samples=args.num_samples,
                 advocate_level=advocate_level,
@@ -83,7 +86,6 @@ if __name__ == "__main__":
             )
 
             metrics = get_metrics(
-                dataset_name=args.dataset,
                 advocate_level=advocate_level,
                 probabilities=probabilities,
                 dataset=dataset,
