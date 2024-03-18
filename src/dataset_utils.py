@@ -309,6 +309,7 @@ def get_dataset(
     advocate_level="None",
     advocate_file=None,
     include_explanation=True,
+    return_raw=False,
 ):
     assert num_few_shot is None, "TODO"
     if is_advocate:
@@ -328,6 +329,8 @@ def get_dataset(
         cache_dir=cache_dir,
         base_data_folder=args.base_data_folder,
     )
+    if return_raw:
+        return dataset
 
     if num_samples is not None:
         dataset = dataset[:num_samples]
@@ -368,12 +371,14 @@ def get_dataset(
                         "is_correct": answer_idx < len(correct_answers),
                         "level": advocate_level,
                         "answer_idx": answer_idx,
+                        "question_idx": i,
                     }
                 )
         else:
             # judge
-            random_order = np.random.permutation(list(range(len(answers))))
-            
+            # random_order = np.random.permutation(list(range(len(answers))))
+            random_order = np.arange(len(answers))
+
             common = {
                 "wrong_answers_idx": [
                     np.where(random_order == i)[0][0]
@@ -384,6 +389,7 @@ def get_dataset(
                     for i in range(len(correct_answers))
                 ],
                 "random_order": random_order,
+                "question_idx": i,
             }
 
             if advocate_level == "None" or advocate_level == "dataset":
@@ -429,7 +435,8 @@ def get_dataset(
                         else None,
                         "explanation_level": advocate_level,
                         "explanation_is_correct": explanation_is_correct,
-                    } | copy.deepcopy(common)
+                    }
+                    | copy.deepcopy(common)
                 )
 
             elif advocate_level in LEVELS:
@@ -469,19 +476,22 @@ def get_dataset(
                     conversation_history = [
                         {"role": "system", "content": system_prompt},
                         {"role": "user", "content": question_str},
-                    ]   
+                    ]
 
                     data_conversations.append(
                         {
                             "conversation_history": conversation_history,
-                            "explanation": advocate_explanation['generation'] if include_explanation else None,
+                            "explanation": advocate_explanation["generation"]
+                            if include_explanation
+                            else None,
                             "include_explanation": include_explanation,
                             "explanation_level": advocate_level,
                             "explanation_is_correct": explanation_is_correct,
                             "explanation_advocate_idx": np.where(
                                 answer_idx == random_order
                             )[0][0],
-                        } | copy.deepcopy(common)
+                        }
+                        | copy.deepcopy(common)
                     )
             else:
                 raise ValueError(f"Unknown explanation_level: {advocate_level}")

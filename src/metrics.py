@@ -8,10 +8,11 @@ def get_metrics(
     probabilities,
     dataset,
     evaluation_method="argmax",
-    indices=None,
+    question_indices=None,
 ):
     assert len(probabilities) == len(dataset)
     metrics = {
+        "overall": [],
         "no_explanation": [],
         "dataset_explanation": [],
         "correct_advocate_explanation": [],
@@ -19,7 +20,10 @@ def get_metrics(
     }
 
     for i in range(len(dataset)):
-        if indices is not None and i not in indices:
+        if (
+            question_indices is not None
+            and dataset[i]["question_idx"] not in question_indices
+        ):
             continue
 
         # check if any probablity is nan
@@ -31,6 +35,8 @@ def get_metrics(
             value = np.argmax(probabilities[i]) in dataset[i]["correct_answers_idx"]
         else:
             raise ValueError(f"Unknown method: {evaluation_method}")
+
+        metrics["overall"].append(value)
 
         if advocate_level == "None":
             metrics["no_explanation"].append(value)
@@ -49,13 +55,22 @@ def get_metrics(
     return {k: np.mean(v) for k, v in metrics.items()}
 
 
-def get_instuction_following_percentage(dataset, probabilities, indices=None):
+def get_instuction_following_percentage(
+    dataset, probabilities, question_indices=None, explanation_is_correct=None
+):
     assert len(dataset) == len(probabilities)
 
     instruction_following = []
     for i in range(len(dataset)):
-        if indices is not None and i not in indices:
+        if (
+            question_indices is not None
+            and dataset[i]["question_idx"] not in question_indices
+        ):
             continue
+
+        if explanation_is_correct is not None:
+            if dataset[i]["explanation_is_correct"] != explanation_is_correct:
+                continue
 
         instruction_following.append(
             dataset[i]["explanation_advocate_idx"] == np.argmax(probabilities[i])
@@ -74,16 +89,17 @@ def get_sample_metrics(
     values = []
 
     for i in range(len(dataset)):
+        assert dataset[i]["explanation_level"] == "None"
         # check if any probablity is nan
         if np.isnan(probabilities[i]).any():
             # something went wrong, e.g. too many tokens in input
             continue
 
         if evaluation_method == "argmax":
-            value = np.argmax(probabilities[i]) in dataset[i]["correct_answers_idx"]
+            result = np.argmax(probabilities[i]) in dataset[i]["correct_answers_idx"]
         else:
             raise ValueError(f"Unknown method: {evaluation_method}")
 
-        values.append(value)
+        values.append({"question_idx": dataset[i]["question_idx"], "result": result})
 
     return np.array(values)
