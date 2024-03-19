@@ -7,7 +7,7 @@ import json
 
 import torch
 
-from .definitions import MODELS, ADDITIONAL_SYSTEM_PROMPTS
+from .definitions import MODELS, ADDITIONAL_SYSTEM_PROMPTS, RESPONSE_TYPES
 
 
 def get_advocate_data_folder(base_data_folder, dataset, model_advocate, num_samples):
@@ -55,15 +55,19 @@ def get_judge_args(notebook=False, notebook_args=[]):
     else:
         args = parser.parse_args()
 
+    num_fewshot_samples_str = (
+        "" if args.num_fewshot_samples is None else f"_{args.num_fewshot_samples}"
+    )
+
     # for legacy reasons
     if args.additional_system_prompt == "None" and args.response_type == "None":
-        args.log_folder = f"{args.base_logdir}/{args.model_judge}/{args.dataset}/{time.strftime('%Y-%m-%d-%H-%M-%S')}"
+        args.log_folder = f"{args.base_logdir}/{args.model_judge}/{args.dataset}{num_fewshot_samples_str}/{time.strftime('%Y-%m-%d-%H-%M-%S')}"
     elif args.additional_system_prompt != "None" and args.response_type == "None":
-        args.log_folder = f"{args.base_logdir}/{args.model_judge}/{args.dataset}/{args.additional_system_prompt}/{time.strftime('%Y-%m-%d-%H-%M-%S')}"
+        args.log_folder = f"{args.base_logdir}/{args.model_judge}/{args.dataset}{num_fewshot_samples_str}/{args.additional_system_prompt}/{time.strftime('%Y-%m-%d-%H-%M-%S')}"
     elif args.additional_system_prompt == "None" and args.response_type != "None":
-        args.log_folder = f"{args.base_logdir}/{args.model_judge}/{args.dataset}/res{args.response_type}/{time.strftime('%Y-%m-%d-%H-%M-%S')}"
+        args.log_folder = f"{args.base_logdir}/{args.model_judge}/{args.dataset}{num_fewshot_samples_str}/res{args.response_type}/{time.strftime('%Y-%m-%d-%H-%M-%S')}"
     else:
-        args.log_folder = f"{args.base_logdir}/{args.model_judge}/{args.dataset}/{args.additional_system_prompt}/res{args.response_type}/{time.strftime('%Y-%m-%d-%H-%M-%S')}"
+        args.log_folder = f"{args.base_logdir}/{args.model_judge}/{args.dataset}{num_fewshot_samples_str}/{args.additional_system_prompt}/res{args.response_type}/{time.strftime('%Y-%m-%d-%H-%M-%S')}"
 
     os.makedirs(args.log_folder, exist_ok=True)
     args.logfile = f"{args.log_folder}/log.txt"

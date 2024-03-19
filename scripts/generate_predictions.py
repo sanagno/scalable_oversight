@@ -58,12 +58,14 @@ if __name__ == "__main__":
                 is_advocate=False,
                 num_samples=args.num_samples,
                 advocate_level=advocate_level,
+                num_few_shot=args.num_fewshot_samples,
                 advocate_file=None
                 if advocate_level not in LEVELS
                 else os.path.join(
                     args.advocate_data_folder, f"generations_{advocate_level}.pkl"
                 ),
                 include_explanation=include_explanation,
+                base_answer_str=base_answer_str,
             )
 
             probabilities = get_answer_probabilities(

@@ -310,10 +310,11 @@ def get_dataset(
     include_explanation=True,
     return_raw=False,
     response_type="None",
+    base_answer_str="The right answer is the letter A",
 ):
-    assert num_few_shot is None, "TODO"
     if is_advocate:
         assert advocate_level in LEVELS
+        assert num_few_shot is None
 
     if advocate_level in LEVELS:
         advocate_level_str = LEVELS[advocate_level].format(field=FIELDS[dataset_name])
@@ -376,8 +377,8 @@ def get_dataset(
                 )
         else:
             # judge
-            # random_order = np.random.permutation(list(range(len(answers))))
-            random_order = np.arange(len(answers))
+            random_order = np.random.permutation(list(range(len(answers))))
+            # random_order = np.arange(len(answers))
 
             common = {
                 "wrong_answers_idx": [
@@ -390,6 +391,8 @@ def get_dataset(
                 ],
                 "random_order": random_order,
                 "question_idx": i,
+                "answer_str": base_answer_str[:-2]
+                + choices[np.where(random_order == 0)[0][0]],
             }
 
             if advocate_level == "None" or advocate_level == "dataset":
@@ -493,10 +496,39 @@ def get_dataset(
                         }
                         | copy.deepcopy(common)
                     )
+
+                    if num_few_shot is not None and i < num_few_shot:
+                        break
             else:
                 raise ValueError(f"Unknown explanation_level: {advocate_level}")
 
     if is_advocate:
         return data_conversations
+
+    if num_few_shot is not None:
+        common_conversation_history = [
+            data_conversations[0]["conversation_history"][0]
+        ] + [
+            x
+            for i in range(num_few_shot)
+            for x in [data_conversations[i]["conversation_history"][1]]
+            + [{"role": "assistant", "content": data_conversations[i]["answer_str"]}]
+        ]
+        print(common_conversation_history)
+        for i in range(num_few_shot, len(data_conversations)):
+            data_conversations[i]["conversation_history"] = copy.deepcopy(
+                common_conversation_history
+            ) + [
+                {
+                    "role": "user",
+                    "content": data_conversations[i]["conversation_history"][-1][
+                        "content"
+                    ],
+                }
+            ]
+        data_conversations = data_conversations[num_few_shot:]
+        # random_order = np.random.permutation(list(range(len(data_conversations)))
+        # )[:num_few_shot]
+        # data_conversations = [data_conversations[i] for i in random_order]
 
     return data_conversations, choices
