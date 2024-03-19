@@ -37,7 +37,18 @@ def get_judge_args(notebook=False, notebook_args=[]):
     parser.add_argument("--model_advocate", type=str, default="Llama-2-13b-chat")
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--num_samples", type=int, default=None)
-    parser.add_argument("--additional_system_prompt", type=str, default="None", choices=list(ADDITIONAL_SYSTEM_PROMPTS.keys()) )
+    parser.add_argument(
+        "--additional_system_prompt",
+        type=str,
+        default="None",
+        choices=list(ADDITIONAL_SYSTEM_PROMPTS.keys()),
+    )
+    parser.add_argument(
+        "--response_type",
+        type=str,
+        default="None",
+        choices=list(RESPONSE_TYPES.keys()),
+    )
 
     if notebook:
         args = parser.parse_known_args(notebook_args)[0]
@@ -45,11 +56,15 @@ def get_judge_args(notebook=False, notebook_args=[]):
         args = parser.parse_args()
 
     # for legacy reasons
-    if args.additional_system_prompt == "None":
+    if args.additional_system_prompt == "None" and args.response_type == "None":
         args.log_folder = f"{args.base_logdir}/{args.model_judge}/{args.dataset}/{time.strftime('%Y-%m-%d-%H-%M-%S')}"
-    else:
+    elif args.additional_system_prompt != "None" and args.response_type == "None":
         args.log_folder = f"{args.base_logdir}/{args.model_judge}/{args.dataset}/{args.additional_system_prompt}/{time.strftime('%Y-%m-%d-%H-%M-%S')}"
-        
+    elif args.additional_system_prompt == "None" and args.response_type != "None":
+        args.log_folder = f"{args.base_logdir}/{args.model_judge}/{args.dataset}/res{args.response_type}/{time.strftime('%Y-%m-%d-%H-%M-%S')}"
+    else:
+        args.log_folder = f"{args.base_logdir}/{args.model_judge}/{args.dataset}/{args.additional_system_prompt}/res{args.response_type}/{time.strftime('%Y-%m-%d-%H-%M-%S')}"
+
     os.makedirs(args.log_folder, exist_ok=True)
     args.logfile = f"{args.log_folder}/log.txt"
 

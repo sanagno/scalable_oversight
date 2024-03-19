@@ -16,7 +16,8 @@ from src.definitions import (
     LEVELS,
     POSSIBLE_ADVOCATES,
     SYSTEM_PROMPTS,
-    ADDITIONAL_SYSTEM_PROMPTS
+    ADDITIONAL_SYSTEM_PROMPTS,
+    RESPONSE_TYPES,
 )
 from src.metrics import get_metrics
 from src.model_utils import get_answer_probabilities, get_model
@@ -35,6 +36,8 @@ if __name__ == "__main__":
         k: v.format(field=FIELDS[args.dataset]) for k, v in SYSTEM_PROMPTS.items()
     }
 
+    base_answer_str = RESPONSE_TYPES[args.response_type]
+
     for system_prompt_name, system_prompt in system_prompts.items():
         for advocate_level, include_explanation in POSSIBLE_ADVOCATES:
             if (
@@ -42,10 +45,12 @@ if __name__ == "__main__":
                 and not HAS_DATASET_EXPLANATIONS[args.dataset]
             ):
                 continue
-            
-            extra_system_prompt = ADDITIONAL_SYSTEM_PROMPTS[args.additional_system_prompt]
 
-            dataset, choices, base_answer = get_dataset(
+            extra_system_prompt = ADDITIONAL_SYSTEM_PROMPTS[
+                args.additional_system_prompt
+            ]
+
+            dataset, choices = get_dataset(
                 args,
                 args.dataset,
                 args.cache_dir,
@@ -66,7 +71,7 @@ if __name__ == "__main__":
                 judge_tokenizer=judge_tokenizer,
                 dataset=dataset,
                 choices=choices,
-                base_answer=base_answer,
+                base_answer=base_answer_str,
             )
 
             save_pickle(

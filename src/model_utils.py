@@ -26,7 +26,7 @@ def parse_dtype(dtype):
         raise ValueError(f"Invalid dtype: {dtype}")
 
 
-def get_model(model_name, cache_dir, dtype, device, vllm=True):
+def get_model(model_name, cache_dir, dtype, device, vllm=True, max_num_seqs=8):
     device_map = "auto" if device.type == "cpu" else (device.index or 0)
 
     huggingface_model_name = HUGGIGNFACE_MODEL_PATHS[model_name][dtype]
@@ -44,7 +44,7 @@ def get_model(model_name, cache_dir, dtype, device, vllm=True):
             huggingface_model_name,
             download_dir=cache_dir,
             max_model_len=MAX_MODEL_LEN[model_name],
-            max_num_seqs=8,
+            max_num_seqs=max_num_seqs,
             trust_remote_code=True,
             **kwargs,
         )

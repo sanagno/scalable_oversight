@@ -19,7 +19,6 @@ def get_dataset_to_format(
     quality_num_charactes=2000,
     wiki_qa_max_num_answers=8,  # only keep questions with up to this many answers ...
 ):
-    base_answer = "The right answer is the letter A"
     if dataset_name == "gpqa":
         dataset = load_dataset(
             "Idavidrein/gpqa", cache_dir=cache_dir, name="gpqa_diamond"
@@ -295,7 +294,7 @@ def get_dataset_to_format(
     else:
         raise ValueError(f"Unknown dataset: {dataset_name}")
 
-    return data, choices, base_answer
+    return data, choices
 
 
 def get_dataset(
@@ -310,6 +309,7 @@ def get_dataset(
     advocate_file=None,
     include_explanation=True,
     return_raw=False,
+    response_type="None",
 ):
     assert num_few_shot is None, "TODO"
     if is_advocate:
@@ -324,7 +324,7 @@ def get_dataset(
             advocate_explanations = load_pickle(advocate_file)
             advocate_explanations_idx = -1
 
-    dataset, choices, base_answer = get_dataset_to_format(
+    dataset, choices = get_dataset_to_format(
         dataset_name=dataset_name,
         cache_dir=cache_dir,
         base_data_folder=args.base_data_folder,
@@ -499,4 +499,4 @@ def get_dataset(
     if is_advocate:
         return data_conversations
 
-    return data_conversations, choices, base_answer
+    return data_conversations, choices
