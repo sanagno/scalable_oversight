@@ -149,3 +149,17 @@ OVERRIDE_CHAT_TEMPLATES = {
     "falcon-40b": "".join(line.strip() for line in _falcon_chat_template.split("\n")),
     "Mixtral": "".join(line.strip() for line in _mixtral_chat_template.split("\n")),
 }
+
+CONFIDENCES = {
+    "0%": " Mention that you only have a gut feeling about the correct answer with a 0% confidence.",
+    "10%": " Mention that you are not sure, but you think the correct answer is the proposed with a 10% confidence.",
+    "20%": " Mention that you are not sure, but you think the correct answer is the proposed with a 20% confidence.",
+    "30%": " Mention that you are not sure, but you think the correct answer is the proposed with a 30% confidence.",
+    "40%": " Mention that you are not completely sure, but you think the correct answer is the proposed with a 40% confidence.",
+    "50%": " Mention that you are not completely sure, but you think the correct answer is the proposed with a 50% confidence.",
+    "60%": " Mention that you are not completely sure, but you think the correct answer is the proposed with a 60% confidence.",
+    "70%": " Mention that you are fairly sure, and that you think the correct answer is the proposed with a 70% confidence",
+    "80%": " Mention that you are fairly sure, and that you think the correct answer is the proposed with a 80% confidence",
+    "90%": " Mention that you are very sure, and that you think the correct answer is the proposed with a 90% confidence",
+    "100%": " Mention that you are absolutely sure, andt hat you think the correct answer is the proposed with a 100% confidence",
+}

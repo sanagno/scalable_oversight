@@ -4,6 +4,21 @@ import copy
 import numpy as np
 from .definitions import ADDITIONAL_SYSTEM_PROMPTS, LEVELS
 
+GREG_PALLETTE = [
+    "#0c122f",
+    "#18255f",
+    "#293e9f",
+    "#465ecf",
+    "#6c8ff1",
+    "#88abfd",
+    "#d5dbe5",
+    "#e9d5cb",
+    "#f7aa8c",
+    "#ea7a5f",
+    "#df431d",
+    "#d9421c",
+    "#df2d1d",
+]
 
 LEVEL_COLORS = {
     "level_0": "#df2d1d",
@@ -48,18 +63,42 @@ def convert_to_timestamp(time_str):
     return time.mktime(time.strptime(time_str, "%Y-%m-%d-%H-%M-%S"))
 
 
-def get_last_exp_by_time(data_path, model, dataset_name, additional_syste_prompt):
-    base_dir = os.path.join(data_path, model, dataset_name)
-    if additional_syste_prompt != "None":
-        base_dir = os.path.join(base_dir, additional_syste_prompt)
+def get_last_exp_by_time(
+    data_path,
+    model,
+    dataset_name,
+    additional_system_prompt="None",
+    response_type="None",
+    num_fewshot_samples=None,
+):
+    num_fewshot_samples_str = (
+        "" if num_fewshot_samples is None else f"_{num_fewshot_samples}"
+    )
 
-    exps = os.listdir(base_dir)
+    if additional_system_prompt == "None" and response_type == "None":
+        log_folder = f"{data_path}/{model}/{dataset_name}{num_fewshot_samples_str}/"
+    elif additional_system_prompt != "None" and response_type == "None":
+        log_folder = f"{data_path}/{model}/{dataset_name}{num_fewshot_samples_str}/{additional_system_prompt}/"
+    elif additional_system_prompt == "None" and response_type != "None":
+        log_folder = f"{data_path}/{model}/{dataset_name}{num_fewshot_samples_str}/res{response_type}/"
+    else:
+        log_folder = f"{data_path}/{model}/{dataset_name}{num_fewshot_samples_str}/{additional_system_prompt}/res{response_type}/"
+
+    exps_ = os.listdir(log_folder)
+    exps = []
+    for exp in exps_:
+        try:
+            convert_to_timestamp(exp)
+            exps.append(exp)
+        except:
+            pass
+
     exps = [exp for exp in exps if exp not in list(ADDITIONAL_SYSTEM_PROMPTS.keys())]
 
     # Sort orders by time
     sorted_orders = sorted(exps, key=lambda x: convert_to_timestamp(x), reverse=True)
 
-    return os.path.join(base_dir, sorted_orders[0])
+    return os.path.join(log_folder, sorted_orders[0])
 
 
 def add_question_idx_in_dataset(dataset):

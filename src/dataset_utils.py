@@ -311,6 +311,7 @@ def get_dataset(
     return_raw=False,
     response_type="None",
     base_answer_str="The right answer is the letter A",
+    additional_advocate_prompt="",
 ):
     if is_advocate:
         assert advocate_level in LEVELS
@@ -362,6 +363,7 @@ def get_dataset(
                     content += (
                         f"\nHere is some additional information to make your resaoning easier.\n"
                         + f"```{dataset_explanation}```"
+                        + additional_advocate_prompt
                     )
 
                 conversation_history.append({"role": "user", "content": content})
@@ -514,7 +516,6 @@ def get_dataset(
             for x in [data_conversations[i]["conversation_history"][1]]
             + [{"role": "assistant", "content": data_conversations[i]["answer_str"]}]
         ]
-        print(common_conversation_history)
         for i in range(num_few_shot, len(data_conversations)):
             data_conversations[i]["conversation_history"] = copy.deepcopy(
                 common_conversation_history
