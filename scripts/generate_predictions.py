@@ -72,6 +72,7 @@ if __name__ == "__main__":
                 ),
                 include_explanation=include_explanation,
                 base_answer_str=base_answer_str,
+                num_explanations=args.num_explanations,
             )
 
             probabilities = get_answer_probabilities(

@@ -19,6 +19,15 @@ def get_advocate_data_folder(base_data_folder, dataset, model_advocate, num_samp
     )
 
 
+def get_oversight_data_folder(base_data_folder, dataset, model_advocate, num_samples):
+    return os.path.join(
+        base_data_folder,
+        "oversight_data",
+        dataset + (("_" + str(num_samples)) if num_samples is not None else ""),
+        model_advocate,
+    )
+
+
 def get_judge_args(notebook=False, notebook_args=[]):
     parser = argparse.ArgumentParser(description="LLM scalable oversight")
     parser.add_argument("--cache_dir", type=str, default=None)
@@ -30,11 +39,12 @@ def get_judge_args(notebook=False, notebook_args=[]):
     )
     parser.add_argument("--dtype", type=str, default="int8")
     parser.add_argument("--dataset", type=str, default="gpqa")
+    parser.add_argument("--num_explanations", type=int, default=None)
     parser.add_argument("--num_fewshot_samples", type=int, default=None)
     parser.add_argument("--evaluation_method", type=str, default="argmax")
     parser.add_argument("--base_logdir", type=str, default="logs")
     parser.add_argument("--base_data_folder", type=str, default="data")
-    parser.add_argument("--model_advocate", type=str, default="Llama-2-13b-chat")
+    parser.add_argument("--model_advocate", type=str, default="Llama-2-70b-chat")
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--num_samples", type=int, default=None)
     parser.add_argument("--only_assistant", type=str, default="False")
@@ -126,6 +136,36 @@ def get_advocate_args(notebook=False, notebook_args=[]):
         args.base_data_folder, args.dataset, args.model_advocate, args.num_samples
     )
     os.makedirs(args.advocate_data_folder, exist_ok=True)
+
+    args.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+    return args
+
+
+def get_oversight_args(notebook=False, notebook_args=[]):
+    parser = argparse.ArgumentParser(description="LLM scalable oversight")
+    parser.add_argument("--cache_dir", type=str, default=None)
+    parser.add_argument(
+        "--model_oversight",
+        type=str,
+        default="Llama-2-13b-chat",
+        choices=MODELS,
+    )
+    parser.add_argument("--dtype", type=str, default="int8")
+    parser.add_argument("--dataset", type=str, default="quality", choices=["quality"])
+    parser.add_argument("--base_data_folder", type=str, default="data")
+    parser.add_argument("--num_samples", type=int, default=None)
+    parser.add_argument("--seed", type=int, default=0)
+
+    if notebook:
+        args = parser.parse_known_args(notebook_args)[0]
+    else:
+        args = parser.parse_args()
+
+    args.oversight_data_folder = get_oversight_data_folder(
+        args.base_data_folder, args.dataset, args.model_oversight, args.num_samples
+    )
+    os.makedirs(args.oversight_data_folder, exist_ok=True)
 
     args.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
