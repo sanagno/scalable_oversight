@@ -20,7 +20,7 @@ from src.definitions import (
     RESPONSE_TYPES,
 )
 from src.metrics import get_metrics
-from src.model_utils import get_answer_probabilities, get_model
+from src.model_utils import get_answer_probabilities, get_model 
 from src.utils import save_pickle, set_seed
 
 if __name__ == "__main__":
@@ -39,7 +39,13 @@ if __name__ == "__main__":
     base_answer_str = RESPONSE_TYPES[args.response_type]
 
     for system_prompt_name, system_prompt in system_prompts.items():
+        if args.only_assistant and system_prompt_name != "assistant":
+            continue
+
         for advocate_level, include_explanation in POSSIBLE_ADVOCATES:
+            if args.only_assistant and (advocate_level != "assistant" and advocate_level != "None"):
+                continue
+
             if (
                 advocate_level == "dataset"
                 and not HAS_DATASET_EXPLANATIONS[args.dataset]

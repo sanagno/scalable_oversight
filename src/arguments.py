@@ -37,6 +37,7 @@ def get_judge_args(notebook=False, notebook_args=[]):
     parser.add_argument("--model_advocate", type=str, default="Llama-2-13b-chat")
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--num_samples", type=int, default=None)
+    parser.add_argument("--only_assistant", type=str, default="False")
     parser.add_argument(
         "--additional_system_prompt",
         type=str,
@@ -54,6 +55,8 @@ def get_judge_args(notebook=False, notebook_args=[]):
         args = parser.parse_known_args(notebook_args)[0]
     else:
         args = parser.parse_args()
+
+    args.only_assistant = args.only_assistant.lower() == "true"
 
     num_fewshot_samples_str = (
         "" if args.num_fewshot_samples is None else f"_{args.num_fewshot_samples}"

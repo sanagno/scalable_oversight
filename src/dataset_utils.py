@@ -514,7 +514,6 @@ def get_dataset(
             for x in [data_conversations[i]["conversation_history"][1]]
             + [{"role": "assistant", "content": data_conversations[i]["answer_str"]}]
         ]
-        print(common_conversation_history)
         for i in range(num_few_shot, len(data_conversations)):
             data_conversations[i]["conversation_history"] = copy.deepcopy(
                 common_conversation_history
