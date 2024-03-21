@@ -312,6 +312,7 @@ def get_dataset(
     response_type="None",
     base_answer_str="The right answer is the letter A",
     additional_advocate_prompt="",
+    num_explanations=None,
 ):
     if is_advocate:
         assert advocate_level in LEVELS
@@ -448,20 +449,51 @@ def get_dataset(
                 for answer_idx, answer in enumerate(
                     correct_answers + incorrect_answers
                 ):
-                    advocate_explanations_idx += 1
-                    advocate_explanation = advocate_explanations[
-                        advocate_explanations_idx
-                    ]
+                    if num_explanations is None:
+                        advocate_explanations_idx += 1
+                        advocate_explanation = advocate_explanations[
+                            advocate_explanations_idx
+                        ]
 
-                    if include_explanation:
-                        explanation_str = (
-                            f"\n\nHere is an explanation from {advocate_level_str} to help you with your answer:\n"
-                            + f"```{advocate_explanation['generation']}```"
-                        )
+                        if include_explanation:
+                            explanation_str = (
+                                f"\n\nHere is an explanation from {advocate_level_str} to help you with your answer:\n"
+                                + f"```{advocate_explanation['generation']}```"
+                            )
+                        else:
+                            explanation_str = f"\n\nThe opinion of {advocate_level_str} is that the correct answer is `{answers[answer_idx]}`."
+
+                        explanation_is_correct = advocate_explanation["is_correct"]
                     else:
-                        explanation_str = f"\n\nThe opinion of {advocate_level_str} is that the correct answer is `{answers[answer_idx]}`."
+                        num_explanations_to_provide = min(
+                            num_explanations, len(answers)
+                        )
+                        # Take num_explanations_to_provide random answers
+                        # and provide explanations for them
+                        explanation_str = ""
 
-                    explanation_is_correct = advocate_explanation["is_correct"]
+                        random_sample_explanations = np.random.permutation(
+                            len(answers)
+                        )[:num_explanations_to_provide]
+
+                        for j in random_sample_explanations:
+                            advocate_explanation = advocate_explanations[
+                                advocate_explanations_idx + j + 1
+                            ]
+                            if include_explanation:
+                                explanation_str += (
+                                    f"\n\nHere is an explanation from {advocate_level_str} to help you with your answer:\n"
+                                    + f"```{advocate_explanation['generation']}```"
+                                )
+                            else:
+                                explanation_str += f"\n\nThe opinion of {advocate_level_str} is that the correct answer is `{answers[j]}`."
+
+                        advocate_explanations_idx += len(answers)
+                        explanation_is_correct = None
+
+                        common[
+                            "random_sample_explanations"
+                        ] = random_sample_explanations
 
                     question_str = (
                         (
@@ -499,7 +531,13 @@ def get_dataset(
                         | copy.deepcopy(common)
                     )
 
+                    if num_explanations is not None:
+                        # we have already updated advocate_explanations_idx
+                        break
+
                     if num_few_shot is not None and i < num_few_shot:
+                        # skip the remaining answers
+                        advocate_explanations_idx += len(random_order) - 1
                         break
             else:
                 raise ValueError(f"Unknown explanation_level: {advocate_level}")

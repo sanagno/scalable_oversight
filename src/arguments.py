@@ -39,11 +39,12 @@ def get_judge_args(notebook=False, notebook_args=[]):
     )
     parser.add_argument("--dtype", type=str, default="int8")
     parser.add_argument("--dataset", type=str, default="gpqa")
+    parser.add_argument("--num_explanations", type=int, default=None)
     parser.add_argument("--num_fewshot_samples", type=int, default=None)
     parser.add_argument("--evaluation_method", type=str, default="argmax")
     parser.add_argument("--base_logdir", type=str, default="logs")
     parser.add_argument("--base_data_folder", type=str, default="data")
-    parser.add_argument("--model_advocate", type=str, default="Llama-2-13b-chat")
+    parser.add_argument("--model_advocate", type=str, default="Llama-2-70b-chat")
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--num_samples", type=int, default=None)
     parser.add_argument(
