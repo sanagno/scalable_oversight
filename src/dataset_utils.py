@@ -313,6 +313,8 @@ def get_dataset(
     base_answer_str="The right answer is the letter A",
     additional_advocate_prompt="",
     num_explanations=None,
+    extra_advocate_str="",
+    only_correct_explanations=False,
 ):
     if is_advocate:
         assert advocate_level in LEVELS
@@ -458,10 +460,14 @@ def get_dataset(
                         if include_explanation:
                             explanation_str = (
                                 f"\n\nHere is an explanation from {advocate_level_str} to help you with your answer:\n"
+                                + extra_advocate_str
                                 + f"```{advocate_explanation['generation']}```"
                             )
                         else:
-                            explanation_str = f"\n\nThe opinion of {advocate_level_str} is that the correct answer is `{answers[answer_idx]}`."
+                            explanation_str = (
+                                f"\n\nThe opinion of {advocate_level_str} is that the correct answer is `{answers[answer_idx]}`."
+                                + extra_advocate_str
+                            )
 
                         explanation_is_correct = advocate_explanation["is_correct"]
                     else:
@@ -483,10 +489,14 @@ def get_dataset(
                             if include_explanation:
                                 explanation_str += (
                                     f"\n\nHere is an explanation from {advocate_level_str} to help you with your answer:\n"
+                                    + extra_advocate_str
                                     + f"```{advocate_explanation['generation']}```"
                                 )
                             else:
-                                explanation_str += f"\n\nThe opinion of {advocate_level_str} is that the correct answer is `{answers[j]}`."
+                                explanation_str += (
+                                    f"\n\nThe opinion of {advocate_level_str} is that the correct answer is `{answers[j]}`."
+                                    + extra_advocate_str
+                                )
 
                         advocate_explanations_idx += len(answers)
                         explanation_is_correct = "Invalid"
@@ -515,21 +525,25 @@ def get_dataset(
                         {"role": "user", "content": question_str},
                     ]
 
-                    data_conversations.append(
-                        {
-                            "conversation_history": conversation_history,
-                            "explanation": advocate_explanation["generation"]
-                            if include_explanation
-                            else None,
-                            "include_explanation": include_explanation,
-                            "explanation_level": advocate_level,
-                            "explanation_is_correct": explanation_is_correct,
-                            "explanation_advocate_idx": np.where(
-                                answer_idx == random_order
-                            )[0][0],
-                        }
-                        | copy.deepcopy(common)
-                    )
+                    if only_correct_explanations and not explanation_is_correct:
+                        # messy does not always work...
+                        pass
+                    else:
+                        data_conversations.append(
+                            {
+                                "conversation_history": conversation_history,
+                                "explanation": advocate_explanation["generation"]
+                                if include_explanation
+                                else None,
+                                "include_explanation": include_explanation,
+                                "explanation_level": advocate_level,
+                                "explanation_is_correct": explanation_is_correct,
+                                "explanation_advocate_idx": np.where(
+                                    answer_idx == random_order
+                                )[0][0],
+                            }
+                            | copy.deepcopy(common)
+                        )
 
                     if num_explanations is not None:
                         # we have already updated advocate_explanations_idx
