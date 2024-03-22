@@ -489,7 +489,7 @@ def get_dataset(
                                 explanation_str += f"\n\nThe opinion of {advocate_level_str} is that the correct answer is `{answers[j]}`."
 
                         advocate_explanations_idx += len(answers)
-                        explanation_is_correct = None
+                        explanation_is_correct = "Invalid"
 
                         common[
                             "random_sample_explanations"
