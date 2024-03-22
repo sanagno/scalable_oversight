@@ -150,6 +150,8 @@ OVERRIDE_CHAT_TEMPLATES = {
     "Mixtral": "".join(line.strip() for line in _mixtral_chat_template.split("\n")),
 }
 
+CONFIDENCES_LIST = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
+
 CONFIDENCES = {
     "0%": " Mention that you only have a gut feeling about the correct answer with a 0% confidence.",
     "10%": " Mention that you are not sure, but you think the correct answer is the proposed with a 10% confidence.",

@@ -1,3 +1,4 @@
+import json
 import time
 import os
 import copy
@@ -70,6 +71,7 @@ def get_last_exp_by_time(
     additional_system_prompt="None",
     response_type="None",
     num_fewshot_samples=None,
+    filter_args=None,
 ):
     num_fewshot_samples_str = (
         "" if num_fewshot_samples is None else f"_{num_fewshot_samples}"
@@ -89,9 +91,17 @@ def get_last_exp_by_time(
     for exp in exps_:
         try:
             convert_to_timestamp(exp)
+            if filter_args is not None:
+                with open(os.path.join(log_folder, exp, "args.txt"), "r") as f:
+                    args = json.load(f)
+
+                if not filter_args(args):
+                    continue
             exps.append(exp)
         except:
             pass
+
+    print("exps_", exps_, "exps", exps)
 
     exps = [exp for exp in exps if exp not in list(ADDITIONAL_SYSTEM_PROMPTS.keys())]
 
