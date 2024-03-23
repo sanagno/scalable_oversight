@@ -56,7 +56,7 @@ FIELDS = {
 
 HAS_DATASET_EXPLANATIONS = {
     "gpqa": True,
-    "quality": False,
+    "quality": True,
     "wiki_qa": False,
     "boolq": True,
     "openbookqa": False,
