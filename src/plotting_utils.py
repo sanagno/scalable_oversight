@@ -101,8 +101,6 @@ def get_last_exp_by_time(
         except:
             pass
 
-    print("exps_", exps_, "exps", exps)
-
     exps = [exp for exp in exps if exp not in list(ADDITIONAL_SYSTEM_PROMPTS.keys())]
 
     # Sort orders by time
