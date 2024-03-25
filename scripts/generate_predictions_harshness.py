@@ -19,6 +19,7 @@ from src.definitions import (
     ADDITIONAL_SYSTEM_PROMPTS,
     RESPONSE_TYPES,
     CONFIDENCES_LIST,
+    HARSHNESSES_LIST
 )
 from src.metrics import get_metrics
 from src.model_utils import get_answer_probabilities, get_model
@@ -43,12 +44,13 @@ if __name__ == "__main__":
 
     base_answer_str = RESPONSE_TYPES[args.response_type]
 
-    for confidence in CONFIDENCES_LIST:
+    for harshness_idx, harshness in enumerate(HARSHNESSES_LIST):
         advocate_level_str = advocate_level_str = LEVELS[advocate_level].format(
             field=FIELDS[args.dataset]
         )
-        extra_advocate_str = f" Note that the {' '.join(advocate_level_str.split(' ')[1:])} is {confidence}% confident about his opinion.\n"
-        
+        extra_advocate_str = harshness.format(advocate_level_str=advocate_level_str)
+        # f"Note that the {advocate_level_str} is {confidence} confident about the explanation.\n"
+
         for include_explanation in [False, True]:
             dataset, choices = get_dataset(
                 args,
@@ -68,7 +70,7 @@ if __name__ == "__main__":
                 base_answer_str=base_answer_str,
                 num_explanations=args.num_explanations,
                 extra_advocate_str=extra_advocate_str,
-                #only_correct_explanations=True,
+                only_correct_explanations=True,
             )
 
             probabilities = get_answer_probabilities(
@@ -83,7 +85,7 @@ if __name__ == "__main__":
                 probabilities,
                 os.path.join(
                     args.log_folder,
-                    f"probabilities_{system_prompt_name}_{advocate_level}_{include_explanation}_{confidence}.pkl",
+                    f"probabilities_{system_prompt_name}_{advocate_level}_{include_explanation}_{harshness_idx}.pkl",
                 ),
             )
 
@@ -91,7 +93,7 @@ if __name__ == "__main__":
                 dataset,
                 os.path.join(
                     args.log_folder,
-                    f"dataset_{system_prompt_name}_{advocate_level}_{include_explanation}_{confidence}.pkl",
+                    f"dataset_{system_prompt_name}_{advocate_level}_{include_explanation}_{harshness_idx}.pkl",
                 ),
             )
 
@@ -103,5 +105,5 @@ if __name__ == "__main__":
             )
 
             logger.info(
-                f"Confidence {confidence} include_explanation {include_explanation} metric is: {metrics}"
+                f"Harshness {harshness_idx} include_explanation {include_explanation} metric is: {metrics}"
             )
