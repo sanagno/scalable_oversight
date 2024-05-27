@@ -9,6 +9,7 @@ def get_metrics(
     dataset,
     evaluation_method="argmax",
     question_indices=None,
+    indices=None,
 ):
     assert len(probabilities) == len(dataset)
     metrics = {
@@ -19,7 +20,7 @@ def get_metrics(
         "incorrect_advocate_explanation": [],
     }
 
-    for i in range(len(dataset)):
+    for i in range(len(dataset)) if indices is None else indices:
         if (
             question_indices is not None
             and dataset[i]["question_idx"] not in question_indices
@@ -56,12 +57,16 @@ def get_metrics(
 
 
 def get_instuction_following_percentage(
-    dataset, probabilities, question_indices=None, explanation_is_correct=None
+    dataset,
+    probabilities,
+    question_indices=None,
+    explanation_is_correct=None,
+    indices=None,
 ):
     assert len(dataset) == len(probabilities)
 
     instruction_following = []
-    for i in range(len(dataset)):
+    for i in range(len(dataset)) if indices is None else indices:
         if (
             question_indices is not None
             and dataset[i]["question_idx"] not in question_indices

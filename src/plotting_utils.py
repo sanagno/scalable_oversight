@@ -43,7 +43,7 @@ DATASET_NAMES = {
 }
 
 MODEL_NAMES = {
-    "Llama-2-70b-chat": "$\it{Llama}$",
+    "Llama-2-70b-chat": "$\it{Llama2}$",
     "Mixtral": "$\it{Mixtral}$",
     "falcon-40b": "$\it{Falcon}$",
 }

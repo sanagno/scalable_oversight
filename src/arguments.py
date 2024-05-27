@@ -10,20 +10,26 @@ import torch
 from .definitions import MODELS, ADDITIONAL_SYSTEM_PROMPTS, RESPONSE_TYPES
 
 
-def get_advocate_data_folder(base_data_folder, dataset, model_advocate, num_samples):
+def get_advocate_data_folder(
+    base_data_folder, dataset, model_advocate, num_samples
+):
     return os.path.join(
         base_data_folder,
         "advocate_data",
-        dataset + (("_" + str(num_samples)) if num_samples is not None else ""),
+        dataset
+        + (("_" + str(num_samples)) if num_samples is not None else ""),
         model_advocate,
     )
 
 
-def get_oversight_data_folder(base_data_folder, dataset, model_advocate, num_samples):
+def get_oversight_data_folder(
+    base_data_folder, dataset, model_advocate, num_samples
+):
     return os.path.join(
         base_data_folder,
         "oversight_data",
-        dataset + (("_" + str(num_samples)) if num_samples is not None else ""),
+        dataset
+        + (("_" + str(num_samples)) if num_samples is not None else ""),
         model_advocate,
     )
 
@@ -44,7 +50,9 @@ def get_judge_args(notebook=False, notebook_args=[]):
     parser.add_argument("--evaluation_method", type=str, default="argmax")
     parser.add_argument("--base_logdir", type=str, default="logs")
     parser.add_argument("--base_data_folder", type=str, default="data")
-    parser.add_argument("--model_advocate", type=str, default="Llama-2-70b-chat")
+    parser.add_argument(
+        "--model_advocate", type=str, default="Llama-2-70b-chat"
+    )
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--num_samples", type=int, default=None)
     parser.add_argument("--only_assistant", type=str, default="False")
@@ -69,18 +77,29 @@ def get_judge_args(notebook=False, notebook_args=[]):
     args.only_assistant = args.only_assistant.lower() == "true"
 
     num_fewshot_samples_str = (
-        "" if args.num_fewshot_samples is None else f"_{args.num_fewshot_samples}"
+        ""
+        if args.num_fewshot_samples is None
+        else f"_{args.num_fewshot_samples}"
     )
 
     # for legacy reasons
-    if args.additional_system_prompt == "None" and args.response_type == "None":
-        args.log_folder = f"{args.base_logdir}/{args.model_judge}/{args.dataset}{num_fewshot_samples_str}/{time.strftime('%Y-%m-%d-%H-%M-%S')}"
-    elif args.additional_system_prompt != "None" and args.response_type == "None":
-        args.log_folder = f"{args.base_logdir}/{args.model_judge}/{args.dataset}{num_fewshot_samples_str}/{args.additional_system_prompt}/{time.strftime('%Y-%m-%d-%H-%M-%S')}"
-    elif args.additional_system_prompt == "None" and args.response_type != "None":
-        args.log_folder = f"{args.base_logdir}/{args.model_judge}/{args.dataset}{num_fewshot_samples_str}/res{args.response_type}/{time.strftime('%Y-%m-%d-%H-%M-%S')}"
+    if (
+        args.additional_system_prompt == "None"
+        and args.response_type == "None"
+    ):
+        args.log_folder = f"{args.base_logdir}/{args.model_advocate}/{args.model_judge}/{args.dataset}{num_fewshot_samples_str}/{time.strftime('%Y-%m-%d-%H-%M-%S')}"
+    elif (
+        args.additional_system_prompt != "None"
+        and args.response_type == "None"
+    ):
+        args.log_folder = f"{args.base_logdir}/{args.model_advocate}/{args.model_judge}/{args.dataset}{num_fewshot_samples_str}/{args.additional_system_prompt}/{time.strftime('%Y-%m-%d-%H-%M-%S')}"
+    elif (
+        args.additional_system_prompt == "None"
+        and args.response_type != "None"
+    ):
+        args.log_folder = f"{args.base_logdir}/{args.model_advocate}/{args.model_judge}/{args.dataset}{num_fewshot_samples_str}/res{args.response_type}/{time.strftime('%Y-%m-%d-%H-%M-%S')}"
     else:
-        args.log_folder = f"{args.base_logdir}/{args.model_judge}/{args.dataset}{num_fewshot_samples_str}/{args.additional_system_prompt}/res{args.response_type}/{time.strftime('%Y-%m-%d-%H-%M-%S')}"
+        args.log_folder = f"{args.base_logdir}/{args.model_advocate}/{args.model_judge}/{args.dataset}{num_fewshot_samples_str}/{args.additional_system_prompt}/res{args.response_type}/{time.strftime('%Y-%m-%d-%H-%M-%S')}"
 
     os.makedirs(args.log_folder, exist_ok=True)
     args.logfile = f"{args.log_folder}/log.txt"
@@ -103,7 +122,10 @@ def get_judge_args(notebook=False, notebook_args=[]):
     logger.info(f"Starting run for model: {args.model_judge}")
 
     args.advocate_data_folder = get_advocate_data_folder(
-        args.base_data_folder, args.dataset, args.model_advocate, args.num_samples
+        args.base_data_folder,
+        args.dataset,
+        args.model_advocate,
+        args.num_samples,
     )
     assert os.path.exists(args.advocate_data_folder)
 
@@ -133,7 +155,10 @@ def get_advocate_args(notebook=False, notebook_args=[]):
         args = parser.parse_args()
 
     args.advocate_data_folder = get_advocate_data_folder(
-        args.base_data_folder, args.dataset, args.model_advocate, args.num_samples
+        args.base_data_folder,
+        args.dataset,
+        args.model_advocate,
+        args.num_samples,
     )
     os.makedirs(args.advocate_data_folder, exist_ok=True)
 
@@ -152,7 +177,9 @@ def get_oversight_args(notebook=False, notebook_args=[]):
         choices=MODELS,
     )
     parser.add_argument("--dtype", type=str, default="int8")
-    parser.add_argument("--dataset", type=str, default="quality", choices=["quality"])
+    parser.add_argument(
+        "--dataset", type=str, default="quality", choices=["quality"]
+    )
     parser.add_argument("--base_data_folder", type=str, default="data")
     parser.add_argument("--num_samples", type=int, default=None)
     parser.add_argument("--seed", type=int, default=0)
@@ -163,7 +190,10 @@ def get_oversight_args(notebook=False, notebook_args=[]):
         args = parser.parse_args()
 
     args.oversight_data_folder = get_oversight_data_folder(
-        args.base_data_folder, args.dataset, args.model_oversight, args.num_samples
+        args.base_data_folder,
+        args.dataset,
+        args.model_oversight,
+        args.num_samples,
     )
     os.makedirs(args.oversight_data_folder, exist_ok=True)
 

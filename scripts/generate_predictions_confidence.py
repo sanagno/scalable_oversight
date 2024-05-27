@@ -47,8 +47,8 @@ if __name__ == "__main__":
         advocate_level_str = advocate_level_str = LEVELS[advocate_level].format(
             field=FIELDS[args.dataset]
         )
-        extra_advocate_str = f" Note that the {' '.join(advocate_level_str.split(' ')[1:])} is {confidence}% confident about his opinion.\n"
-        
+        extra_advocate_str = f" Note that the {' '.join(advocate_level_str.split(' ')[1:])} is {confidence}% confident about their opinion.\n"
+
         for include_explanation in [False, True]:
             dataset, choices = get_dataset(
                 args,
@@ -68,7 +68,7 @@ if __name__ == "__main__":
                 base_answer_str=base_answer_str,
                 num_explanations=args.num_explanations,
                 extra_advocate_str=extra_advocate_str,
-                #only_correct_explanations=True,
+                # only_correct_explanations=True,
             )
 
             probabilities = get_answer_probabilities(

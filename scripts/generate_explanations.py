@@ -23,7 +23,9 @@ if __name__ == "__main__":
     for level in LEVELS:
         logger.info(f"Starting for level: {level}")
 
-        system_prompt = SYSTEM_PROMPTS[level].format(field=FIELDS[args.dataset])
+        system_prompt = SYSTEM_PROMPTS[level].format(
+            field=FIELDS[args.dataset]
+        )
 
         dataset = get_dataset(
             args,
@@ -44,5 +46,7 @@ if __name__ == "__main__":
 
         save_pickle(
             generations,
-            os.path.join(args.advocate_data_folder, f"generations_{level}.pkl"),
+            os.path.join(
+                args.advocate_data_folder, f"generations_{level}.pkl"
+            ),
         )
