@@ -18,6 +18,8 @@ from .definitions import (
 def parse_dtype(dtype):
     if dtype == "float16":
         return torch.float16
+    elif dtype == "bfloat16":
+        return torch.bfloat16
     elif dtype == "float32":
         return torch.float32
     elif dtype == "float64":
@@ -26,7 +28,7 @@ def parse_dtype(dtype):
         raise ValueError(f"Invalid dtype: {dtype}")
 
 
-def get_model(model_name, cache_dir, dtype, device, vllm=True, max_num_seqs=8):
+def get_model(model_name, cache_dir, dtype, device, vllm=True, max_num_seqs=8, **other_kwargs):
     device_map = "auto" if device.type == "cpu" else (device.index or 0)
 
     huggingface_model_name = HUGGIGNFACE_MODEL_PATHS[model_name][dtype]
@@ -59,7 +61,7 @@ def get_model(model_name, cache_dir, dtype, device, vllm=True, max_num_seqs=8):
             print("Flash attention not found.")
             pass
 
-        if dtype in ["float32", "float16"]:
+        if dtype in ["float32", "float16", "bfloat16"]:
             kwargs = {
                 "torch_dtype": parse_dtype(dtype),
             }
@@ -67,11 +69,14 @@ def get_model(model_name, cache_dir, dtype, device, vllm=True, max_num_seqs=8):
             kwargs = {"load_in_8bit": True}
         else:
             raise ValueError(f"Invalid dtype: {dtype}")
+        
+        kwargs["device_map"] = device_map
+        
+        kwargs.update(other_kwargs)
 
         model = AutoModelForCausalLM.from_pretrained(
             huggingface_model_name,
             low_cpu_mem_usage=True,
-            device_map=device_map,
             attn_implementation="flash_attention_2"
             if has_flash_attn
             else None,

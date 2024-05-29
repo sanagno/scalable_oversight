@@ -50,8 +50,10 @@ FIELDS = {
     "boolq": "a science field",
     "openbookqa": "a science field",
     "commonsense_qa": "a science field",
+    "commonsense_qa-train": "a science field",
     "piqa": "a science field",
     "siqa": "a science field",
+    "gsm8k": "a science field",
 }
 
 HAS_DATASET_EXPLANATIONS = {
@@ -61,8 +63,10 @@ HAS_DATASET_EXPLANATIONS = {
     "boolq": True,
     "openbookqa": False,
     "commonsense_qa": False,
+    "commonsense_qa-train": False,
     "piqa": False,
     "siqa": False,
+    "gsm8k": True,
 }
 
 LEVELS = {

@@ -33,7 +33,10 @@ def get_metrics(
             continue
 
         if evaluation_method == "argmax":
-            value = np.argmax(probabilities[i]) in dataset[i]["correct_answers_idx"]
+            value = (
+                np.argmax(probabilities[i])
+                in dataset[i]["correct_answers_idx"]
+            )
         else:
             raise ValueError(f"Unknown method: {evaluation_method}")
 
@@ -78,7 +81,8 @@ def get_instuction_following_percentage(
                 continue
 
         instruction_following.append(
-            dataset[i]["explanation_advocate_idx"] == np.argmax(probabilities[i])
+            dataset[i]["explanation_advocate_idx"]
+            == np.argmax(probabilities[i])
         )
 
     return np.array(instruction_following)
@@ -101,10 +105,15 @@ def get_sample_metrics(
             continue
 
         if evaluation_method == "argmax":
-            result = np.argmax(probabilities[i]) in dataset[i]["correct_answers_idx"]
+            result = (
+                np.argmax(probabilities[i])
+                in dataset[i]["correct_answers_idx"]
+            )
         else:
             raise ValueError(f"Unknown method: {evaluation_method}")
 
-        values.append({"question_idx": dataset[i]["question_idx"], "result": result})
+        values.append(
+            {"question_idx": dataset[i]["question_idx"], "result": result}
+        )
 
     return np.array(values)

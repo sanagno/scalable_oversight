@@ -28,7 +28,9 @@ def get_dataset_to_format(
         for i in range(len(dataset)):
             if i == MAX_SAMPLES:
                 break
-            question = "You are given a question. Question: " + dataset[i]["Question"]
+            question = (
+                "You are given a question. Question: " + dataset[i]["Question"]
+            )
             correct_answers = [dataset[i]["Correct Answer"].strip()]
             incorrect_answers = [
                 dataset[i]["Incorrect Answer 1"].strip(),
@@ -85,7 +87,9 @@ def get_dataset_to_format(
                         ].strip()
                     ],
                     "incorrect_answers": [
-                        dataset[i]["questions"][0]["options"][wrong_answers[j]].strip()
+                        dataset[i]["questions"][0]["options"][
+                            wrong_answers[j]
+                        ].strip()
                         for j in range(3)
                     ],
                     "explanation": context,
@@ -116,7 +120,9 @@ def get_dataset_to_format(
 
             if (
                 len(indices) == 0
-                or np.where([dataset[x]["label"] == 1 for x in indices])[0].shape[0]
+                or np.where([dataset[x]["label"] == 1 for x in indices])[
+                    0
+                ].shape[0]
                 != 1
                 or len(indices) > wiki_qa_max_num_answers
             ):
@@ -149,7 +155,9 @@ def get_dataset_to_format(
         for i in range(len(dataset)):
             if i == MAX_SAMPLES:
                 break
-            question = "You are given a question. Question: " + dataset[i]["question"]
+            question = (
+                "You are given a question. Question: " + dataset[i]["question"]
+            )
             assert dataset[i]["answer"] in [True, False]
             correct_answers = ["True"] if dataset[i]["answer"] else ["False"]
             incorrect_answers = ["False"] if dataset[i]["answer"] else ["True"]
@@ -165,7 +173,9 @@ def get_dataset_to_format(
             )
         choices = [" " + chr(65 + i) for i in range(2)]
     elif dataset_name == "openbookqa":
-        dataset = load_dataset("allenai/openbookqa", cache_dir=cache_dir)["validation"]
+        dataset = load_dataset("allenai/openbookqa", cache_dir=cache_dir)[
+            "validation"
+        ]
 
         data = []
 
@@ -173,16 +183,21 @@ def get_dataset_to_format(
             if i == MAX_SAMPLES:
                 break
 
-            question = "Continue the following sentence: " + dataset[i]["question_stem"]
+            question = (
+                "Continue the following sentence: "
+                + dataset[i]["question_stem"]
+            )
             correct_answers = [
                 dataset[i]["choices"]["text"][idx]
                 for idx in range(4)
-                if dataset[i]["answerKey"] == dataset[i]["choices"]["label"][idx]
+                if dataset[i]["answerKey"]
+                == dataset[i]["choices"]["label"][idx]
             ]
             incorrect_answers = [
                 dataset[i]["choices"]["text"][idx]
                 for idx in range(4)
-                if dataset[i]["answerKey"] != dataset[i]["choices"]["label"][idx]
+                if dataset[i]["answerKey"]
+                != dataset[i]["choices"]["label"][idx]
             ]
 
             data.append(
@@ -195,7 +210,9 @@ def get_dataset_to_format(
             )
         choices = [" " + chr(65 + i) for i in range(4)]
     elif dataset_name == "commonsense_qa":
-        dataset = load_dataset("tau/commonsense_qa", cache_dir=cache_dir)["validation"]
+        dataset = load_dataset("tau/commonsense_qa", cache_dir=cache_dir)[
+            "validation"
+        ]
 
         data = []
 
@@ -203,16 +220,53 @@ def get_dataset_to_format(
             if i == MAX_SAMPLES:
                 break
 
-            question = "You are given a question. Question: " + dataset[i]["question"]
+            question = (
+                "You are given a question. Question: " + dataset[i]["question"]
+            )
             correct_answers = [
                 dataset[i]["choices"]["text"][idx]
                 for idx in range(5)
-                if dataset[i]["answerKey"] == dataset[i]["choices"]["label"][idx]
+                if dataset[i]["answerKey"]
+                == dataset[i]["choices"]["label"][idx]
             ]
             incorrect_answers = [
                 dataset[i]["choices"]["text"][idx]
                 for idx in range(5)
-                if dataset[i]["answerKey"] != dataset[i]["choices"]["label"][idx]
+                if dataset[i]["answerKey"]
+                != dataset[i]["choices"]["label"][idx]
+            ]
+
+            data.append(
+                {
+                    "question": question,
+                    "correct_answers": correct_answers,
+                    "incorrect_answers": incorrect_answers,
+                    "explanation": "",
+                }
+            )
+        choices = [" " + chr(65 + i) for i in range(5)]
+    elif dataset_name == "commonsense_qa-train":
+        dataset = load_dataset("tau/commonsense_qa", cache_dir=cache_dir)[
+            "train"
+        ]
+
+        data = []
+
+        for i in range(len(dataset)):
+            question = (
+                "You are given a question. Question: " + dataset[i]["question"]
+            )
+            correct_answers = [
+                dataset[i]["choices"]["text"][idx]
+                for idx in range(5)
+                if dataset[i]["answerKey"]
+                == dataset[i]["choices"]["label"][idx]
+            ]
+            incorrect_answers = [
+                dataset[i]["choices"]["text"][idx]
+                for idx in range(5)
+                if dataset[i]["answerKey"]
+                != dataset[i]["choices"]["label"][idx]
             ]
 
             data.append(
@@ -234,14 +288,19 @@ def get_dataset_to_format(
                 break
 
             question = (
-                "You are given a goal. You have to choose the best solution based on commonsense reasoning. Goal: "
+                "You are given a goal. You have to choose the best solution"
+                " based on commonsense reasoning. Goal: "
                 + dataset[i]["goal"]
             )
             correct_answers = [
-                dataset[i]["sol1"] if dataset[i]["label"] == 0 else dataset[i]["sol2"]
+                dataset[i]["sol1"]
+                if dataset[i]["label"] == 0
+                else dataset[i]["sol2"]
             ]
             incorrect_answers = [
-                dataset[i]["sol2"] if dataset[i]["label"] == 0 else dataset[i]["sol1"]
+                dataset[i]["sol2"]
+                if dataset[i]["label"] == 0
+                else dataset[i]["sol1"]
             ]
 
             data.append(
@@ -255,7 +314,9 @@ def get_dataset_to_format(
 
         choices = [" " + chr(65 + i) for i in range(2)]
     elif dataset_name == "siqa":
-        dataset = load_dataset("social_i_qa", cache_dir=cache_dir)["validation"]
+        dataset = load_dataset("social_i_qa", cache_dir=cache_dir)[
+            "validation"
+        ]
 
         data = []
 
@@ -264,7 +325,8 @@ def get_dataset_to_format(
                 break
 
             question = (
-                "Answer the following question based on the provided context. Question: "
+                "Answer the following question based on the provided context."
+                " Question: "
                 + dataset[i]["question"]
                 + " Context: "
                 + dataset[i]["context"]
@@ -291,6 +353,43 @@ def get_dataset_to_format(
                 }
             )
         choices = [" " + chr(65 + i) for i in range(3)]
+    elif dataset_name == "gsm8k":
+        dataset = load_dataset("gsm8k", name="main", cache_dir=cache_dir)[
+            "test"
+        ]
+
+        data = []
+
+        for i in range(len(dataset)):
+            if i == MAX_SAMPLES:
+                break
+
+            question = (
+                "You are given a question. Question: " + dataset[i]["question"]
+            )
+            explanation, correct_answer = dataset[i]["answer"].split("\n####")
+            correct_answer = correct_answer.strip().replace(",", "")
+
+            correct_answers = [correct_answer]
+            current_answers = [int(correct_answer)]
+            incorrect_answers = []
+
+            for _ in range(3):
+                random_answer = random.randint(10, 1000)
+                if random_answer in current_answers:
+                    continue
+                incorrect_answers.append(str(random_answer))
+
+            data.append(
+                {
+                    "question": question,
+                    "correct_answers": correct_answers,
+                    "incorrect_answers": incorrect_answers,
+                    "explanation": explanation,
+                }
+            )
+
+        choices = [" " + chr(65 + i) for i in range(4)]
     else:
         raise ValueError(f"Unknown dataset: {dataset_name}")
 
@@ -321,7 +420,9 @@ def get_dataset(
         assert num_few_shot is None
 
     if advocate_level in LEVELS:
-        advocate_level_str = LEVELS[advocate_level].format(field=FIELDS[dataset_name])
+        advocate_level_str = LEVELS[advocate_level].format(
+            field=FIELDS[dataset_name]
+        )
 
         if not is_advocate:
             # Load precalculated explanations
@@ -334,6 +435,7 @@ def get_dataset(
         cache_dir=cache_dir,
         base_data_folder=args.base_data_folder,
     )
+
     if return_raw:
         return dataset
 
@@ -352,24 +454,34 @@ def get_dataset(
 
         if is_advocate:
             # advocate
-            for answer_idx, answer in enumerate(correct_answers + incorrect_answers):
-                conversation_history = [{"role": "system", "content": system_prompt}]
+            for answer_idx, answer in enumerate(
+                correct_answers + incorrect_answers
+            ):
+                conversation_history = [
+                    {"role": "system", "content": system_prompt}
+                ]
                 content = (
                     question.strip()
                     + "\n\n"
                     + f"The correct answer is: `{answer}`. "
-                    + f"Explain in a few sentences why the answer: `{answer}` is the correct one, remember that you are {advocate_level_str}. "
-                    + f"Be very brief and concise. State exactly that the correct answer is `{answer}`."
+                    + f"Explain in a few sentences why the answer: `{answer}`"
+                    " is the correct one, remember that you are"
+                    f" {advocate_level_str}. "
+                    + "Be very brief and concise. State exactly that the"
+                    f" correct answer is `{answer}`."
                 )
 
                 if len(dataset_explanation) > 0:
                     content += (
-                        f"\nHere is some additional information to make your resaoning easier.\n"
+                        f"\nHere is some additional information to make your"
+                        f" resaoning easier.\n"
                         + f"```{dataset_explanation}```"
                         + additional_advocate_prompt
                     )
 
-                conversation_history.append({"role": "user", "content": content})
+                conversation_history.append(
+                    {"role": "user", "content": content}
+                )
 
                 data_conversations.append(
                     {
@@ -405,7 +517,8 @@ def get_dataset(
 
                 explanation_str = (
                     (
-                        "\n\nHere is an explanation to help you with your answer:\n"
+                        "\n\nHere is an explanation to help you with your"
+                        " answer:\n"
                         + dataset_explanation
                     )
                     if advocate_level == "dataset"
@@ -459,17 +572,23 @@ def get_dataset(
 
                         if include_explanation:
                             explanation_str = (
-                                f"\n\nHere is an explanation from {advocate_level_str} to help you with your answer:\n"
+                                "\n\nHere is an explanation from"
+                                f" {advocate_level_str} to help you with your"
+                                " answer:\n"
                                 + extra_advocate_str
                                 + f"```{advocate_explanation['generation']}```"
                             )
                         else:
                             explanation_str = (
-                                f"\n\nThe opinion of {advocate_level_str} is that the correct answer is `{answers[answer_idx]}`."
+                                f"\n\nThe opinion of {advocate_level_str} is"
+                                " that the correct answer is"
+                                f" `{answers[answer_idx]}`."
                                 + extra_advocate_str
                             )
 
-                        explanation_is_correct = advocate_explanation["is_correct"]
+                        explanation_is_correct = advocate_explanation[
+                            "is_correct"
+                        ]
                     else:
                         num_explanations_to_provide = min(
                             num_explanations, len(answers)
@@ -488,13 +607,17 @@ def get_dataset(
                             ]
                             if include_explanation:
                                 explanation_str += (
-                                    f"\n\nHere is an explanation from {advocate_level_str} to help you with your answer:\n"
+                                    "\n\nHere is an explanation from"
+                                    f" {advocate_level_str} to help you with"
+                                    " your answer:\n"
                                     + extra_advocate_str
                                     + f"```{advocate_explanation['generation']}```"
                                 )
                             else:
                                 explanation_str += (
-                                    f"\n\nThe opinion of {advocate_level_str} is that the correct answer is `{answers[j]}`."
+                                    "\n\nThe opinion of"
+                                    f" {advocate_level_str} is that the"
+                                    f" correct answer is `{answers[j]}`."
                                     + extra_advocate_str
                                 )
 
@@ -516,7 +639,8 @@ def get_dataset(
                                 ]
                             )
                         )
-                        + "\n\nReply only with the letter of the correct answer."
+                        + "\n\nReply only with the letter of the correct"
+                        " answer."
                         + explanation_str
                     )
 
@@ -525,14 +649,19 @@ def get_dataset(
                         {"role": "user", "content": question_str},
                     ]
 
-                    if only_correct_explanations and not explanation_is_correct:
+                    if (
+                        only_correct_explanations
+                        and not explanation_is_correct
+                    ):
                         # messy does not always work...
                         pass
                     else:
                         data_conversations.append(
                             {
                                 "conversation_history": conversation_history,
-                                "explanation": advocate_explanation["generation"]
+                                "explanation": advocate_explanation[
+                                    "generation"
+                                ]
                                 if include_explanation
                                 else None,
                                 "include_explanation": include_explanation,
@@ -554,7 +683,9 @@ def get_dataset(
                         advocate_explanations_idx += len(random_order) - 1
                         break
             else:
-                raise ValueError(f"Unknown explanation_level: {advocate_level}")
+                raise ValueError(
+                    f"Unknown explanation_level: {advocate_level}"
+                )
 
     if is_advocate:
         return data_conversations
@@ -566,7 +697,12 @@ def get_dataset(
             x
             for i in range(num_few_shot)
             for x in [data_conversations[i]["conversation_history"][1]]
-            + [{"role": "assistant", "content": data_conversations[i]["answer_str"]}]
+            + [
+                {
+                    "role": "assistant",
+                    "content": data_conversations[i]["answer_str"],
+                }
+            ]
         ]
         for i in range(num_few_shot, len(data_conversations)):
             data_conversations[i]["conversation_history"] = copy.deepcopy(
@@ -574,9 +710,9 @@ def get_dataset(
             ) + [
                 {
                     "role": "user",
-                    "content": data_conversations[i]["conversation_history"][-1][
-                        "content"
-                    ],
+                    "content": data_conversations[i]["conversation_history"][
+                        -1
+                    ]["content"],
                 }
             ]
         data_conversations = data_conversations[num_few_shot:]

@@ -68,17 +68,25 @@ def get_last_exp_by_time(
     data_path,
     model,
     dataset_name,
+    advocate_model=None,
     additional_system_prompt="None",
     response_type="None",
     num_fewshot_samples=None,
     filter_args=None,
+    version="v1",
 ):
     num_fewshot_samples_str = (
         "" if num_fewshot_samples is None else f"_{num_fewshot_samples}"
     )
 
+    if version == "v2":
+        assert advocate_model is not None
+        data_path = f"{data_path}/{advocate_model}/"
+
     if additional_system_prompt == "None" and response_type == "None":
-        log_folder = f"{data_path}/{model}/{dataset_name}{num_fewshot_samples_str}/"
+        log_folder = (
+            f"{data_path}/{model}/{dataset_name}{num_fewshot_samples_str}/"
+        )
     elif additional_system_prompt != "None" and response_type == "None":
         log_folder = f"{data_path}/{model}/{dataset_name}{num_fewshot_samples_str}/{additional_system_prompt}/"
     elif additional_system_prompt == "None" and response_type != "None":
@@ -101,10 +109,16 @@ def get_last_exp_by_time(
         except:
             pass
 
-    exps = [exp for exp in exps if exp not in list(ADDITIONAL_SYSTEM_PROMPTS.keys())]
+    exps = [
+        exp
+        for exp in exps
+        if exp not in list(ADDITIONAL_SYSTEM_PROMPTS.keys())
+    ]
 
     # Sort orders by time
-    sorted_orders = sorted(exps, key=lambda x: convert_to_timestamp(x), reverse=True)
+    sorted_orders = sorted(
+        exps, key=lambda x: convert_to_timestamp(x), reverse=True
+    )
 
     return os.path.join(log_folder, sorted_orders[0])
 
@@ -157,7 +171,8 @@ def probability_stats(
         ] / np.sum(probabilities_bias[i])
 
         is_bias_correct = (
-            np.argmax(probabilities_bias[i]) in dataset_bias[i]["correct_answers_idx"]
+            np.argmax(probabilities_bias[i])
+            in dataset_bias[i]["correct_answers_idx"]
         )
 
         is_explanation_correct = dataset_bias[i]["explanation_is_correct"]
