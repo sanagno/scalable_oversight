@@ -6,7 +6,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
 from src.arguments import get_oversight_args
 from src.dataset_utils import get_dataset
-from src.definitions import CONFIDENCES, FIELDS, LEVELS, SYSTEM_PROMPTS
+from src.definitions import CONFIDENCES, FIELDS, SYSTEM_PROMPTS
 from src.model_utils import get_model, get_model_generations
 from src.utils import save_pickle, set_seed
 

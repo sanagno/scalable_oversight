@@ -1,8 +1,10 @@
-import json
-import time
-import os
 import copy
+import json
+import os
+import time
+
 import numpy as np
+
 from .definitions import ADDITIONAL_SYSTEM_PROMPTS, LEVELS
 
 GREG_PALLETTE = [

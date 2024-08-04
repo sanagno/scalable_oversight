@@ -7,12 +7,8 @@ from tqdm import tqdm
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from vllm import LLM, SamplingParams
 
-from .definitions import (
-    HUGGIGNFACE_MODEL_PATHS,
-    MAX_MODEL_LEN,
-    TOKENIZER_NAME,
-    OVERRIDE_CHAT_TEMPLATES,
-)
+from .definitions import (HUGGIGNFACE_MODEL_PATHS, MAX_MODEL_LEN,
+                          OVERRIDE_CHAT_TEMPLATES, TOKENIZER_NAME)
 
 
 def parse_dtype(dtype):

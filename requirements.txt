@@ -1,0 +1,7 @@
+datasets==2.20.0
+flash_attn==2.6.3
+numpy==2.0.1
+torch==2.4.0
+tqdm==4.65.0
+transformers==4.43.3
+vllm==0.5.3.post1

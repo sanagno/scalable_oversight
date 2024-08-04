@@ -1,13 +1,13 @@
 import argparse
-import logging
-import sys
-import os
-import time
 import json
+import logging
+import os
+import sys
+import time
 
 import torch
 
-from .definitions import MODELS, ADDITIONAL_SYSTEM_PROMPTS, RESPONSE_TYPES
+from .definitions import ADDITIONAL_SYSTEM_PROMPTS, MODELS, RESPONSE_TYPES
 
 
 def get_advocate_data_folder(

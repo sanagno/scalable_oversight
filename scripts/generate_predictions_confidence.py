@@ -6,20 +6,10 @@ sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
 import logging
 
-from tqdm import tqdm
-
 from src.arguments import get_judge_args
 from src.dataset_utils import get_dataset
-from src.definitions import (
-    FIELDS,
-    HAS_DATASET_EXPLANATIONS,
-    LEVELS,
-    POSSIBLE_ADVOCATES,
-    SYSTEM_PROMPTS,
-    ADDITIONAL_SYSTEM_PROMPTS,
-    RESPONSE_TYPES,
-    CONFIDENCES_LIST,
-)
+from src.definitions import (ADDITIONAL_SYSTEM_PROMPTS, CONFIDENCES_LIST,
+                             FIELDS, LEVELS, RESPONSE_TYPES, SYSTEM_PROMPTS)
 from src.metrics import get_metrics
 from src.model_utils import get_answer_probabilities, get_model
 from src.utils import save_pickle, set_seed

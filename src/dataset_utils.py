@@ -1,7 +1,7 @@
+import copy
 import json
 import os
 import random
-import copy
 
 import numpy as np
 from datasets import load_dataset
