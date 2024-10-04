@@ -35,4 +35,11 @@ python scripts/generate_predictions.py --dataset $DATASET --cache_dir $CACHE_DIR
 ```
 
 ### Citation
-TODO
+```bibtex
+@article{anagnostidis2024susceptible,
+  title={How Susceptible are LLMs to Influence in Prompts?},
+  author={Anagnostidis, Sotiris and Bulian, Jannis},
+  journal={arXiv preprint arXiv:2408.11865},
+  year={2024}
+}
+```
